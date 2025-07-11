@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>CSKH 507</title>
+    <style>
+        body { font-family: Arial; background: #f9f9f9; display: flex; flex-direction: column; align-items: center; }
+        #messages { width: 100%; max-width: 400px; height: 300px; overflow-y: auto; background: #fff; border: 1px solid #ccc; margin: 20px 0; padding: 10px; border-radius: 8px;}
+        #form { display: flex; width: 100%; max-width: 400px;}
+        #input { flex: 1; padding: 10px; border-radius: 8px 0 0 8px; border: 1px solid #ccc;}
+        #send { padding: 10px 20px; border-radius: 0 8px 8px 0; border: 1px solid #ccc; background: #0984e3; color: #fff; cursor: pointer;}
+    </style>
+</head>
+<body>
+    <h2>Chào mừng đến CSKH 507</h2>
+    <div id="messages"></div>
+    <form id="form">
+        <input id="input" autocomplete="off" placeholder="Nhập tin nhắn..." /><button id="send">Gửi</button>
+    </form>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+        const form = document.getElementById('form');
+        const input = document.getElementById('input');
+        const messages = document.getElementById('messages');
+
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            if (input.value) {
+                socket.emit('chat message', { user: 'Khách', text: input.value });
+                input.value = '';
+            }
+        });
+
+        socket.on('chat message', function(msg) {
+            const item = document.createElement('div');
+            item.textContent = `${msg.user}: ${msg.text}`;
+            messages.appendChild(item);
+            messages.scrollTop = messages.scrollHeight;
+        });
+    </script>
+</body>
+</html>
