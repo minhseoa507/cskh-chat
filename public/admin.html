@@ -2,63 +2,51 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
-  <title>Admin CSKH</title>
+  <title>Admin CSKH - Messenger Style</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" href="style.css">
-  <style>
-    body { background: #f5f7fa; }
-    .cskh-admin-main { display: flex; gap: 24px; }
-    .cskh-admin-list { background: #f6f7fb; border-radius: 16px; padding: 18px 10px 10px 10px; max-width: 340px; min-width: 220px; box-shadow: 0 2px 16px rgba(0,0,0,0.08);}
-    .cskh-admin-chatbox { flex:1; background: #f9fafc; border-radius: 18px; padding: 22px 18px 12px 18px; min-height: 340px; max-height: 520px; overflow-y: auto; box-shadow: 0 4px 24px rgba(0,0,0,0.08);}
-    #adminMsgs { flex: 1; overflow-y: auto; min-height: 220px; max-height: 350px;}
-    .cskh-input { position: sticky; bottom: 0; background: #fff; }
-    #adminMsgInput { resize: none; }
-    @media (max-width: 900px) {
-      .cskh-admin-main { flex-direction: column; }
-      .cskh-admin-list, .cskh-admin-chatbox { max-width: 100%; }
-    }
-  </style>
 </head>
 <body>
-<div class="cskh-box">
-  <div class="cskh-header">
-    <span>🎧 Admin CSKH</span>
+<div class="admin-mess-container">
+  <div class="admin-mess-sidebar" id="userList"></div>
+  <div class="admin-mess-chatpanel" id="chatPanel">
+    <div class="admin-mess-empty" id="emptyPanel">
+      <div class="admin-mess-empty-icon">💬</div>
+      <div class="admin-mess-empty-text">Chọn một khách để bắt đầu trò chuyện</div>
+    </div>
+    <div class="admin-mess-chatbox" id="chatBox" style="display:none;">
+      <div class="admin-mess-chat-header" id="chatHeader"></div>
+      <div class="admin-mess-messages" id="messages"></div>
+      <div id="adminTyping" class="admin-mess-typing" style="display:none;">
+        <span>Khách đang nhập</span>
+        <span class="cskh-typing-dot"></span><span class="cskh-typing-dot"></span><span class="cskh-typing-dot"></span>
+      </div>
+      <form id="adminInputForm" class="admin-mess-input" autocomplete="off">
+        <label>
+          <input type="file" id="adminImgInput" accept="image/*" style="display:none;">
+          <span>📎</span>
+        </label>
+        <input type="text" id="adminMsgInput" placeholder="Nhập trả lời..." autocomplete="off">
+        <button type="submit">Gửi</button>
+      </form>
+    </div>
   </div>
-  <div id="adminLogin" class="cskh-login">
+</div>
+
+<div class="admin-mess-login" id="adminLogin">
+  <div class="admin-mess-login-box">
     <h3>Đăng nhập quản trị viên</h3>
     <input type="password" id="adminPass" placeholder="Nhập mật khẩu admin...">
     <button onclick="loginAdmin()">Đăng nhập</button>
   </div>
-  <div id="adminPanel" style="display:none;">
-    <div class="cskh-admin-main">
-      <div class="cskh-admin-list" id="userList"></div>
-      <div class="cskh-admin-chatbox" id="adminChatBox" style="display:none;flex-direction:column;">
-        <div class="cskh-admin-header" id="adminChatHeader"></div>
-        <div id="adminMsgs"></div>
-        <div id="adminTyping" class="cskh-admin-typing" style="display:none;">
-          <span>Khách đang nhập</span>
-          <span class="cskh-typing-dot"></span><span class="cskh-typing-dot"></span><span class="cskh-typing-dot"></span>
-        </div>
-        <form id="adminInputForm" class="cskh-input" autocomplete="off">
-          <label>
-            <input type="file" id="adminImgInput" accept="image/*" style="display:none;">
-            <span>📎</span>
-          </label>
-          <textarea id="adminMsgInput" placeholder="Nhập trả lời..." autocomplete="off" rows="1" style="resize:none;flex:1;border:1px solid #e5e7eb;border-radius:7px;padding:10px 13px;font-size:1rem;"></textarea>
-          <button type="submit">Gửi</button>
-        </form>
-      </div>
-    </div>
-  </div>
 </div>
+
 <script>
 let adminAuth = '';
 let currentClient = '';
-let chatPolling = null;
-let typingTimer = null;
-let typingStatus = false;
-let typingTimeoutUser = null;
-let lastMsgsLength = 0;
+let clientName = '';
+let lastSeen = {};
+
 function loginAdmin() {
   let pass = document.getElementById('adminPass').value;
   adminAuth = btoa('admin:' + pass);
@@ -66,7 +54,7 @@ function loginAdmin() {
     .then(r=>r.json()).then(list=>{
       if (Array.isArray(list)) {
         document.getElementById('adminLogin').style.display = 'none';
-        document.getElementById('adminPanel').style.display = '';
+        document.querySelector('.admin-mess-container').style.display = 'flex';
         loadUserList();
         pollUserList();
       } else {
@@ -80,42 +68,56 @@ function loadUserList() {
     .then(list=>{
       let html = '';
       list.forEach(u=>{
-        html += `<div class="cskh-admin-user${u.unread?' unread':''}" onclick="openChat('${u.clientId}','${u.name||'Ẩn danh'}')">
-          <span class="dot${u.online?'':' offline'}"></span>
-          <span style="flex:1;">${u.name||'Ẩn danh'}</span>
-          <span style="font-size:0.93em;color:#888;">${u.lastMsg ? (new Date(u.lastMsg.time)).toLocaleTimeString() : ''}</span>
-          ${u.unread ? '<span style="color:#4f8cff;margin-left:8px;">Chưa trả lời</span>' : ''}
+        let active = (u.clientId === currentClient) ? ' active' : '';
+        let online = u.online ? 'online' : 'offline';
+        let lastMsg = u.lastMsg ? (u.lastMsg.msg.startsWith('img:') ? '🖼️ Ảnh' : u.lastMsg.msg) : '';
+        let time = u.lastMsg ? new Date(u.lastMsg.time).toLocaleTimeString() : '';
+        let unread = u.unread ? '<span class="admin-mess-unread">Chưa xem</span>' : '';
+        html += `<div class="admin-mess-user${active}" onclick="openChat('${u.clientId}','${u.name||'Ẩn danh'}')">
+          <div class="admin-mess-avatar ${online}"></div>
+          <div class="admin-mess-userinfo">
+            <div class="admin-mess-username">${u.name||'Ẩn danh'}</div>
+            <div class="admin-mess-lastmsg">${lastMsg}</div>
+          </div>
+          <div class="admin-mess-meta">
+            <div class="admin-mess-time">${time}</div>
+            ${u.online ? '<div class="admin-mess-dot online"></div>' : '<div class="admin-mess-dot offline"></div>'}
+            ${unread}
+          </div>
         </div>`;
       });
-      document.getElementById('userList').innerHTML = html || '<div style="color:#888;">Chưa có khách nào chat</div>';
+      document.getElementById('userList').innerHTML = html || '<div style="color:#888;padding:30px 0;text-align:center;">Chưa có khách nào chat</div>';
     });
 }
 function openChat(clientId, name) {
-  // Tắt typing ở khách cũ nếu có
-  if (currentClient) sendTyping(false);
   currentClient = clientId;
-  document.getElementById('adminChatBox').style.display = 'flex';
-  document.getElementById('adminChatHeader').innerHTML = `<span>${name}</span> <span id="adminOnlineDot" class="dot"></span>`;
-  loadChat(true);
-  if (chatPolling) clearInterval(chatPolling);
-  chatPolling = setInterval(()=>loadChat(false), 1200);
+  clientName = name;
+  document.getElementById('emptyPanel').style.display = 'none';
+  document.getElementById('chatBox').style.display = '';
+  document.getElementById('chatHeader').innerHTML = `<span>${name}</span>`;
+  loadChat();
+  loadUserList();
 }
-function loadChat(scrollToEnd = false) {
+function loadChat() {
   fetch('/api/chat?clientId='+currentClient, {headers:{authorization:'Basic '+adminAuth}})
     .then(r=>r.json())
     .then(arr=>{
-      let chatDiv = document.getElementById('adminMsgs');
-      let atBottom = chatDiv.scrollHeight - chatDiv.scrollTop - chatDiv.clientHeight < 40;
       let html = '';
-      arr.forEach(m=>{
+      let lastUserMsgIdx = -1;
+      arr.forEach((m,i)=>{
         let bubble = m.msg.startsWith('img:') ? `<img src="${m.msg.slice(4)}" alt="img">` : m.msg.replace(/</g,'&lt;').replace(/\n/g,'<br>');
-        if (m.role === 'user') html += `<div class="cskh-msg"><div class="bubble">${bubble}</div></div>`;
-        else html += `<div class="cskh-msg user"><div class="bubble">${bubble}</div></div>`;
+        let seen = '';
+        if (m.role === 'user') lastUserMsgIdx = i;
+        if (m.role === 'admin' && i === arr.length-1) {
+          seen = (lastSeen[currentClient]) ? '<div class="admin-mess-seen">Đã xem</div>' : '<div class="admin-mess-seen admin-mess-seen-unread">Chưa xem</div>';
+        }
+        if (m.role === 'user')
+          html += `<div class="admin-mess-msg user"><div class="bubble">${bubble}</div></div>`;
+        else
+          html += `<div class="admin-mess-msg admin"><div class="bubble">${bubble}${seen}</div></div>`;
       });
-      chatDiv.innerHTML = html;
-      // Chỉ scroll nếu vừa gửi/nhận tin nhắn mới, hoặc lần đầu mở chat
-      if (scrollToEnd || atBottom || arr.length !== lastMsgsLength) chatDiv.scrollTop = chatDiv.scrollHeight;
-      lastMsgsLength = arr.length;
+      document.getElementById('messages').innerHTML = html;
+      document.getElementById('messages').scrollTop = 99999;
       pollTyping();
     });
 }
@@ -127,31 +129,12 @@ document.getElementById('adminInputForm').onsubmit = function(e) {
     method:'POST',
     headers:{'Content-Type':'application/json',authorization:'Basic '+adminAuth},
     body: JSON.stringify({clientId:currentClient, msg})
-  }).then(()=>{
-    document.getElementById('adminMsgInput').value='';
-    loadChat(true);
-    autoResize();
-    sendTyping(false);
-    typingStatus = false;
-  });
+  }).then(()=>{document.getElementById('adminMsgInput').value='';loadChat();});
+  sendTyping(false);
 };
 document.getElementById('adminMsgInput').addEventListener('input', ()=>{
-  if (!typingStatus) {
-    sendTyping(true);
-    typingStatus = true;
-  }
-  clearTimeout(typingTimer);
-  typingTimer = setTimeout(()=>{
-    sendTyping(false);
-    typingStatus = false;
-  }, 1200);
-  autoResize();
+  sendTyping(document.getElementById('adminMsgInput').value.length > 0);
 });
-function autoResize() {
-  let input = document.getElementById('adminMsgInput');
-  input.style.height = "auto";
-  input.style.height = (input.scrollHeight) + "px";
-}
 function sendTyping(typing) {
   if (!currentClient) return;
   fetch('/api/admintyping', {
@@ -172,7 +155,7 @@ document.getElementById('adminImgInput').onchange = function() {
           method:'POST',
           headers:{'Content-Type':'application/json',authorization:'Basic '+adminAuth},
           body: JSON.stringify({clientId:currentClient, msg:'img:' + data.url})
-        }).then(()=>loadChat(true));
+        }).then(()=>loadChat());
       }
     });
 };
@@ -180,27 +163,29 @@ document.querySelector('#adminInputForm label').onclick = ()=>document.getElemen
 
 let pollTimer = null;
 function pollUserList() {
-  loadUserList();
-  pollTimer = setTimeout(pollUserList, 2000);
+  fetch('/api/allchats', {headers:{authorization:'Basic '+adminAuth}})
+    .then(r=>r.json())
+    .then(list=>{
+      lastSeen = {};
+      list.forEach(u=>{
+        if (!u.unread) lastSeen[u.clientId] = true;
+      });
+      loadUserList();
+      pollTimer = setTimeout(pollUserList, 2000);
+    });
 }
 let pollTypingTimer = null;
 function pollTyping() {
   fetch('/api/allchats', {headers:{authorization:'Basic '+adminAuth}})
     .then(r=>r.json()).then(list=>{
       let chat = list.find(c=>c.clientId===currentClient);
-      document.getElementById('adminOnlineDot').className = 'dot' + (chat && chat.online ? '' : ' offline');
-      if (chat && chat.typing) {
-        document.getElementById('adminTyping').style.display = '';
-        clearTimeout(typingTimeoutUser);
-        typingTimeoutUser = setTimeout(()=>{document.getElementById('adminTyping').style.display='none';}, 3000);
-      } else {
-        document.getElementById('adminTyping').style.display = 'none';
-      }
+      document.getElementById('adminTyping').style.display = (chat && chat.typing) ? '' : 'none';
       pollTypingTimer = setTimeout(pollTyping, 1200);
     });
 }
 window.loginAdmin = loginAdmin;
 window.openChat = openChat;
+document.querySelector('.admin-mess-container').style.display = 'none';
 </script>
 </body>
 </html>
