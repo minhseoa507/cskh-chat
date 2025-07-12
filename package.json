@@ -1,13 +1,14 @@
 {
   "name": "cskh-chat",
   "version": "1.0.0",
-  "description": "CSKH 507 Chat",
   "main": "server.js",
+  "type": "module",
   "scripts": {
     "start": "node server.js"
   },
   "dependencies": {
     "express": "^4.18.2",
-    "socket.io": "^4.7.5"
+    "express-basic-auth": "^1.2.0",
+    "multer": "^1.4.5"
   }
 }
