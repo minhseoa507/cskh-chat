@@ -3,62 +3,149 @@
 <head>
     <meta charset="UTF-8">
     <title>Admin CSKH 507</title>
-    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css?family=Montserrat:600,400&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(120deg, #fffbe7 0%, #a6c0fe 100%);
+            min-height: 100vh;
+            margin: 0;
+            font-family: 'Montserrat', Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .chat-container {
+            background: rgba(255,255,255,0.97);
+            box-shadow: 0 8px 40px rgba(0,0,0,0.12);
+            border-radius: 24px;
+            padding: 32px 24px 16px 24px;
+            width: 420px;
+            max-width: 98vw;
+        }
+        .chat-header {
+            font-size: 1.7rem;
+            font-weight: 600;
+            color: #c97c2b;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        #messages {
+            height: 350px;
+            overflow-y: auto;
+            background: #f3f6fb;
+            border-radius: 16px;
+            padding: 18px 12px;
+            margin-bottom: 18px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            font-size: 1.05rem;
+        }
+        .msg {
+            display: flex;
+            align-items: flex-end;
+            margin-bottom: 10px;
+        }
+        .msg.admin {
+            flex-direction: row-reverse;
+        }
+        .bubble {
+            max-width: 75%;
+            padding: 10px 16px;
+            border-radius: 20px;
+            background: #ffe4b5;
+            margin: 0 8px;
+            color: #222;
+            box-shadow: 0 1px 4px rgba(150,150,150,0.07);
+        }
+        .msg.admin .bubble {
+            background: #a6c0fe;
+            color: #fff;
+        }
+        .avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: #c97c2b;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: #fff;
+            font-size: 1.1rem;
+        }
+        #form {
+            display: flex;
+            gap: 8px;
+        }
+        #input {
+            flex: 1;
+            padding: 12px 14px;
+            border-radius: 16px;
+            border: 1px solid #d4dbe5;
+            font-size: 1rem;
+            outline: none;
+            transition: border 0.2s;
+        }
+        #input:focus {
+            border: 1.5px solid #a6c0fe;
+        }
+        #send {
+            background: linear-gradient(120deg, #c97c2b 0%, #a6c0fe 100%);
+            color: #fff;
+            font-weight: 600;
+            padding: 0 22px;
+            border: none;
+            border-radius: 16px;
+            cursor: pointer;
+            transition: background 0.2s, box-shadow 0.2s;
+            box-shadow: 0 2px 8px rgba(166,192,254,0.08);
+        }
+        #send:hover {
+            background: linear-gradient(120deg, #a6c0fe 0%, #c97c2b 100%);
+        }
+        @media (max-width: 600px) {
+            .chat-container { padding: 18px 5vw; width: 99vw;}
+            #messages { height: 220px; }
+        }
+    </style>
 </head>
 <body>
-    <h2>Quản lý CSKH 507</h2>
-    <div id="clients"></div>
-    <div id="messages"></div>
-    <form id="form" style="display:none;">
-        <input id="input" autocomplete="off" placeholder="Nhập tin nhắn trả lời..." />
-        <button>Trả lời</button>
-    </form>
+    <div class="chat-container">
+        <div class="chat-header">👑 ADMIN CSKH 507</div>
+        <div id="messages"></div>
+        <form id="form" autocomplete="off">
+            <input id="input" placeholder="Nhập tin nhắn trả lời..." />
+            <button id="send" type="submit">Trả lời</button>
+        </form>
+    </div>
     <script src="/socket.io/socket.io.js"></script>
     <script>
         const socket = io();
-        let currentId = null;
-        socket.emit('admin join');
-        socket.on('clients', ids => {
-            const clients = document.getElementById('clients');
-            clients.innerHTML = '<b>Khách đang chat:</b><br>';
-            ids.forEach(id => {
-                const btn = document.createElement('button');
-                btn.textContent = id;
-                btn.onclick = () => {
-                    currentId = id;
-                    socket.emit('admin select', id);
-                    document.getElementById('form').style.display = '';
-                };
-                clients.appendChild(btn);
-                clients.appendChild(document.createElement('br'));
-            });
-        });
-        socket.on('history', msgs => {
-            const messages = document.getElementById('messages');
-            messages.innerHTML = '';
-            msgs.forEach(msg => {
-                const div = document.createElement('div');
-                div.textContent = `${msg.from}: ${msg.text}`;
-                messages.appendChild(div);
-            });
-        });
-        document.getElementById('form').onsubmit = e => {
-            e.preventDefault();
-            const input = document.getElementById('input');
-            if (input.value && currentId) {
-                socket.emit('admin message', { id: currentId, text: input.value });
-                input.value = '';
-            }
-        };
-        socket.on('chat message', msg => {
-            const messages = document.getElementById('messages');
+        const form = document.getElementById('form');
+        const input = document.getElementById('input');
+        const messages = document.getElementById('messages');
+
+        function renderMsg(user, text) {
             const div = document.createElement('div');
-            div.textContent = `${msg.from}: ${msg.text}`;
+            div.className = 'msg ' + (user === 'Admin' ? 'admin' : '');
+            div.innerHTML = `
+                <div class="avatar">${user === 'Admin' ? 'A' : 'K'}</div>
+                <div class="bubble">${text}</div>
+            `;
             messages.appendChild(div);
             messages.scrollTop = messages.scrollHeight;
+        }
+
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            if (input.value) {
+                socket.emit('chat message', { user: 'Admin', text: input.value });
+                renderMsg('Admin', input.value);
+                input.value = '';
+            }
         });
-        socket.on('notify', data => {
-            // Có thể thêm thông báo khi có khách mới nhắn
+
+        socket.on('chat message', function(msg) {
+            if (msg.user !== 'Admin') renderMsg(msg.user, msg.text);
         });
     </script>
 </body>
