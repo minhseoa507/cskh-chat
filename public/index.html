@@ -2,40 +2,58 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>CSKH 507</title>
-    <style>
-        body { font-family: Arial; background: #f9f9f9; display: flex; flex-direction: column; align-items: center; }
-        #messages { width: 100%; max-width: 400px; height: 300px; overflow-y: auto; background: #fff; border: 1px solid #ccc; margin: 20px 0; padding: 10px; border-radius: 8px;}
-        #form { display: flex; width: 100%; max-width: 400px;}
-        #input { flex: 1; padding: 10px; border-radius: 8px 0 0 8px; border: 1px solid #ccc;}
-        #send { padding: 10px 20px; border-radius: 0 8px 8px 0; border: 1px solid #ccc; background: #0984e3; color: #fff; cursor: pointer;}
-    </style>
+    <title>CSKH 507 - Chat riêng</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <h2>Chào mừng đến CSKH 507</h2>
-    <div id="messages"></div>
-    <form id="form">
-        <input id="input" autocomplete="off" placeholder="Nhập tin nhắn..." /><button id="send">Gửi</button>
-    </form>
+    <div id="login">
+        <h3>Nhập tên của bạn để bắt đầu chat</h3>
+        <input id="name" placeholder="Tên của bạn" />
+        <button id="start">Bắt đầu</button>
+    </div>
+    <div id="chat" style="display:none;">
+        <h2>Chào <span id="user"></span>!</h2>
+        <div id="messages"></div>
+        <form id="form">
+            <input id="input" autocomplete="off" placeholder="Nhập tin nhắn..." />
+            <button>Gửi</button>
+        </form>
+    </div>
     <script src="/socket.io/socket.io.js"></script>
     <script>
         const socket = io();
-        const form = document.getElementById('form');
-        const input = document.getElementById('input');
-        const messages = document.getElementById('messages');
-
-        form.addEventListener('submit', function(e) {
+        let userId = null;
+        document.getElementById('start').onclick = () => {
+            const name = document.getElementById('name').value.trim();
+            if (!name) return alert('Nhập tên!');
+            userId = name + '_' + Math.random().toString(36).slice(2,8);
+            socket.emit('register', { id: userId });
+            document.getElementById('user').textContent = name;
+            document.getElementById('login').style.display = 'none';
+            document.getElementById('chat').style.display = '';
+        };
+        socket.on('history', msgs => {
+            const messages = document.getElementById('messages');
+            messages.innerHTML = '';
+            msgs.forEach(msg => {
+                const div = document.createElement('div');
+                div.textContent = `${msg.from}: ${msg.text}`;
+                messages.appendChild(div);
+            });
+        });
+        document.getElementById('form').onsubmit = e => {
             e.preventDefault();
+            const input = document.getElementById('input');
             if (input.value) {
-                socket.emit('chat message', { user: 'Khách', text: input.value });
+                socket.emit('chat message', { from: 'Khách', text: input.value });
                 input.value = '';
             }
-        });
-
-        socket.on('chat message', function(msg) {
-            const item = document.createElement('div');
-            item.textContent = `${msg.user}: ${msg.text}`;
-            messages.appendChild(item);
+        };
+        socket.on('chat message', msg => {
+            const messages = document.getElementById('messages');
+            const div = document.createElement('div');
+            div.textContent = `${msg.from}: ${msg.text}`;
+            messages.appendChild(div);
             messages.scrollTop = messages.scrollHeight;
         });
     </script>
