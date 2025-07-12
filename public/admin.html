@@ -3,50 +3,62 @@
 <head>
     <meta charset="UTF-8">
     <title>Admin CSKH 507</title>
-    <style>
-        body { font-family: Arial; background: #fffbe7; display: flex; flex-direction: column; align-items: center; }
-        #messages { width: 100%; max-width: 500px; height: 350px; overflow-y: auto; background: #fff; border: 1px solid #ccc; margin: 20px 0; padding: 10px; border-radius: 8px;}
-        #form { display: flex; width: 100%; max-width: 500px;}
-        #input { flex: 1; padding: 10px; border-radius: 8px 0 0 8px; border: 1px solid #ccc;}
-        #send { padding: 10px 20px; border-radius: 0 8px 8px 0; border: 1px solid #ccc; background: #00b894; color: #fff; cursor: pointer;}
-    </style>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <h2>Quản lý CSKH 507</h2>
+    <div id="clients"></div>
     <div id="messages"></div>
-    <form id="form">
-        <input id="input" autocomplete="off" placeholder="Nhập tin nhắn trả lời..." /><button id="send">Trả lời</button>
+    <form id="form" style="display:none;">
+        <input id="input" autocomplete="off" placeholder="Nhập tin nhắn trả lời..." />
+        <button>Trả lời</button>
     </form>
     <script src="/socket.io/socket.io.js"></script>
     <script>
         const socket = io();
-        const form = document.getElementById('form');
-        const input = document.getElementById('input');
-        const messages = document.getElementById('messages');
-
-        // Load lịch sử tin nhắn
-        fetch('/admin/messages').then(res => res.json()).then(data => {
-            data.forEach(msg => {
-                const item = document.createElement('div');
-                item.textContent = `${msg.user}: ${msg.text}`;
-                messages.appendChild(item);
+        let currentId = null;
+        socket.emit('admin join');
+        socket.on('clients', ids => {
+            const clients = document.getElementById('clients');
+            clients.innerHTML = '<b>Khách đang chat:</b><br>';
+            ids.forEach(id => {
+                const btn = document.createElement('button');
+                btn.textContent = id;
+                btn.onclick = () => {
+                    currentId = id;
+                    socket.emit('admin select', id);
+                    document.getElementById('form').style.display = '';
+                };
+                clients.appendChild(btn);
+                clients.appendChild(document.createElement('br'));
             });
-            messages.scrollTop = messages.scrollHeight;
         });
-
-        form.addEventListener('submit', function(e) {
+        socket.on('history', msgs => {
+            const messages = document.getElementById('messages');
+            messages.innerHTML = '';
+            msgs.forEach(msg => {
+                const div = document.createElement('div');
+                div.textContent = `${msg.from}: ${msg.text}`;
+                messages.appendChild(div);
+            });
+        });
+        document.getElementById('form').onsubmit = e => {
             e.preventDefault();
-            if (input.value) {
-                socket.emit('chat message', { user: 'Admin', text: input.value });
+            const input = document.getElementById('input');
+            if (input.value && currentId) {
+                socket.emit('admin message', { id: currentId, text: input.value });
                 input.value = '';
             }
-        });
-
-        socket.on('chat message', function(msg) {
-            const item = document.createElement('div');
-            item.textContent = `${msg.user}: ${msg.text}`;
-            messages.appendChild(item);
+        };
+        socket.on('chat message', msg => {
+            const messages = document.getElementById('messages');
+            const div = document.createElement('div');
+            div.textContent = `${msg.from}: ${msg.text}`;
+            messages.appendChild(div);
             messages.scrollTop = messages.scrollHeight;
+        });
+        socket.on('notify', data => {
+            // Có thể thêm thông báo khi có khách mới nhắn
         });
     </script>
 </body>
