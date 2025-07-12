@@ -5,9 +5,57 @@
   <title>Admin CSKH - Messenger Style</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" href="style.css">
+  <style>
+    body { background: #e9f1fa; }
+    .admin-mess-container { display: flex; height: 96vh; min-width: 900px; background: #e9f1fa; border-radius: 16px; box-shadow: 0 4px 32px rgba(0,0,0,0.10); overflow: hidden;}
+    .admin-mess-sidebar { width: 340px; background: #fff; border-right: 1.5px solid #e2eaf6; overflow-y: auto; padding: 0;}
+    .admin-mess-user { display: flex; align-items: center; gap: 16px; padding: 18px 20px 14px 20px; border-bottom: 1px solid #f2f2f5; cursor: pointer; transition: background 0.18s; background: #fff;}
+    .admin-mess-user.active, .admin-mess-user:hover { background: #dbeaff;}
+    .admin-mess-avatar { width: 44px; height: 44px; border-radius: 50%; background: linear-gradient(135deg,#4f8cff,#6ed6ff); display: flex; align-items: center; justify-content: center; position: relative;}
+    .admin-mess-avatar.online:after { content: ""; position: absolute; right: 2px; bottom: 2px; width: 11px; height: 11px; border-radius: 50%; background: #4f8cff; border: 2px solid #fff;}
+    .admin-mess-avatar.offline:after { content: ""; position: absolute; right: 2px; bottom: 2px; width: 11px; height: 11px; border-radius: 50%; background: #bbb; border: 2px solid #fff;}
+    .admin-mess-userinfo { flex: 1; min-width: 0;}
+    .admin-mess-username { font-weight: 600; font-size: 1.08rem; color: #23272f; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;}
+    .admin-mess-lastmsg { color: #888; font-size: 0.98em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;}
+    .admin-mess-meta { display: flex; flex-direction: column; align-items: flex-end; gap: 3px;}
+    .admin-mess-dot { width: 10px; height: 10px; border-radius: 50%; margin-top: 2px;}
+    .admin-mess-dot.online { background: #4f8cff;}
+    .admin-mess-dot.offline { background: #bbb;}
+    .admin-mess-unread { color: #fff; background: #4f8cff; border-radius: 7px; padding: 1px 9px; font-size: 0.92em; margin-top: 4px;}
+    .admin-mess-chatpanel { flex: 1; background: #e9f1fa; position: relative; display: flex; flex-direction: column;}
+    .admin-mess-empty { flex:1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #bbb; font-size: 1.18rem; background: #e9f1fa;}
+    .admin-mess-empty-icon { font-size: 3.5rem; margin-bottom: 16px;}
+    .admin-mess-chatbox { display: flex; flex-direction: column; height: 100%; }
+    .admin-mess-chat-header { padding: 18px 26px; background: #fff; font-weight: 700; font-size: 1.13rem; border-bottom: 1.5px solid #e2eaf6;}
+    .admin-mess-messages { flex: 1; padding: 24px 32px 10px 32px; overflow-y: auto; background: #f8fafc;}
+    .admin-mess-msg { margin-bottom: 18px; display: flex; align-items: flex-end; }
+    .admin-mess-msg.user { justify-content: flex-start;}
+    .admin-mess-msg.admin { justify-content: flex-end;}
+    .admin-mess-msg .bubble { padding: 12px 18px; border-radius: 16px; background: #e5f0ff; color: #23272f; font-size: 1.03rem; max-width: 62%; word-break: break-word; box-shadow: 0 2px 8px rgba(79,140,255,0.07); position: relative;}
+    .admin-mess-msg.admin .bubble { background: #4f8cff; color: #fff;}
+    .admin-mess-msg .bubble img { max-width: 220px; max-height: 220px; border-radius: 8px; display: block;}
+    .admin-mess-seen { font-size: 0.91em; color: #fff; margin-top: 8px; opacity: 0.7;}
+    .admin-mess-seen.admin-mess-seen-unread { color: #ffd700; }
+    .admin-mess-typing { color: #888; font-size: 1.04rem; margin: 10px 0 0 10px; display: flex; align-items: center; gap: 6px;}
+    .admin-mess-input { display: flex; gap: 8px; align-items: center; padding: 14px 26px; border-top: 1.5px solid #e2eaf6; background: #fff;}
+    .admin-mess-input input[type="text"] { flex: 1; border: 1px solid #e5e7eb; border-radius: 10px; padding: 12px 16px; font-size: 1.08rem;}
+    .admin-mess-input button, .admin-mess-input label { background: #4f8cff; color: #fff; border: none; border-radius: 10px; font-size: 1.11rem; font-weight: 600; cursor: pointer; transition: background 0.2s; display: flex; align-items: center; height: 40px; padding: 0 18px;}
+    .admin-mess-input button:hover, .admin-mess-input label:hover { background: #3571c7;}
+    .admin-mess-login { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(79,140,255,0.09); display: flex; align-items: center; justify-content: center; z-index: 999;}
+    .admin-mess-login-box { background: #fff; border-radius: 14px; box-shadow: 0 2px 16px rgba(0,0,0,0.10); padding: 40px 32px 32px 32px; text-align: center;}
+    .admin-mess-login-box input { width: 90%; padding: 12px 16px; border-radius: 7px; border: 1px solid #e5e7eb; font-size: 1.07rem; margin-bottom: 18px;}
+    .admin-mess-login-box button { width: 90%; background: #4f8cff; color: #fff; border: none; border-radius: 7px; padding: 12px 0; font-size: 1.1rem; font-weight: 600; cursor: pointer; transition: background 0.2s;}
+    .admin-mess-login-box button:hover { background: #3571c7;}
+    @media (max-width: 900px) {
+      .admin-mess-container { min-width: 0; flex-direction: column; }
+      .admin-mess-sidebar { width: 100%; max-width: 100vw;}
+      .admin-mess-chatpanel { min-width: 0;}
+      .admin-mess-messages { padding: 12px 6px 10px 6px;}
+    }
+  </style>
 </head>
 <body>
-<div class="admin-mess-container">
+<div class="admin-mess-container" style="display:none;">
   <div class="admin-mess-sidebar" id="userList"></div>
   <div class="admin-mess-chatpanel" id="chatPanel">
     <div class="admin-mess-empty" id="emptyPanel">
@@ -40,11 +88,150 @@
   </div>
 </div>
 <script>
-// ... logic JS như bản đã sửa, bổ sung: ...
-// - Khi chọn khách thì hiển thị chatBox, ẩn emptyPanel
-// - Khi chưa chọn, chỉ hiện emptyPanel
-// - Cột trái: render danh sách khách, avatar, tên, trạng thái, tin nhắn cuối, badge đã xem/chưa xem
-// - Cột phải: render lịch sử chat, trạng thái đã xem, typing, gửi ảnh, responsive
+let adminAuth = '';
+let currentClient = '';
+let clientName = '';
+let lastSeen = {};
+
+function loginAdmin() {
+  let pass = document.getElementById('adminPass').value;
+  adminAuth = btoa('admin:' + pass);
+  fetch('/api/allchats', {headers:{authorization:'Basic '+adminAuth}})
+    .then(r=>r.json()).then(list=>{
+      if (Array.isArray(list)) {
+        document.getElementById('adminLogin').style.display = 'none';
+        document.querySelector('.admin-mess-container').style.display = 'flex';
+        loadUserList();
+        pollUserList();
+      } else {
+        alert('Sai mật khẩu!');
+      }
+    });
+}
+function loadUserList() {
+  fetch('/api/allchats', {headers:{authorization:'Basic '+adminAuth}})
+    .then(r=>r.json())
+    .then(list=>{
+      let html = '';
+      list.forEach(u=>{
+        let active = (u.clientId === currentClient) ? ' active' : '';
+        let online = u.online ? 'online' : 'offline';
+        let lastMsg = u.lastMsg ? (u.lastMsg.msg.startsWith('img:') ? '🖼️ Ảnh' : u.lastMsg.msg) : '';
+        let time = u.lastMsg ? new Date(u.lastMsg.time).toLocaleTimeString() : '';
+        let unread = u.unread ? '<span class="admin-mess-unread">Chưa xem</span>' : '';
+        html += `<div class="admin-mess-user${active}" onclick="openChat('${u.clientId}','${u.name||'Ẩn danh'}')">
+          <div class="admin-mess-avatar ${online}"></div>
+          <div class="admin-mess-userinfo">
+            <div class="admin-mess-username">${u.name||'Ẩn danh'}</div>
+            <div class="admin-mess-lastmsg">${lastMsg}</div>
+          </div>
+          <div class="admin-mess-meta">
+            <div class="admin-mess-time">${time}</div>
+            ${u.online ? '<div class="admin-mess-dot online"></div>' : '<div class="admin-mess-dot offline"></div>'}
+            ${unread}
+          </div>
+        </div>`;
+      });
+      document.getElementById('userList').innerHTML = html || '<div style="color:#888;padding:30px 0;text-align:center;">Chưa có khách nào chat</div>';
+    });
+}
+function openChat(clientId, name) {
+  currentClient = clientId;
+  clientName = name;
+  document.getElementById('emptyPanel').style.display = 'none';
+  document.getElementById('chatBox').style.display = '';
+  document.getElementById('chatHeader').innerHTML = `<span>${name}</span>`;
+  loadChat();
+  loadUserList();
+}
+function loadChat() {
+  fetch('/api/chat?clientId='+currentClient, {headers:{authorization:'Basic '+adminAuth}})
+    .then(r=>r.json())
+    .then(arr=>{
+      let html = '';
+      let lastUserMsgIdx = -1;
+      arr.forEach((m,i)=>{
+        let bubble = m.msg.startsWith('img:') ? `<img src="${m.msg.slice(4)}" alt="img">` : m.msg.replace(/</g,'&lt;').replace(/\n/g,'<br>');
+        let seen = '';
+        if (m.role === 'user') lastUserMsgIdx = i;
+        if (m.role === 'admin' && i === arr.length-1) {
+          seen = (lastSeen[currentClient]) ? '<div class="admin-mess-seen">Đã xem</div>' : '<div class="admin-mess-seen admin-mess-seen-unread">Chưa xem</div>';
+        }
+        if (m.role === 'user')
+          html += `<div class="admin-mess-msg user"><div class="bubble">${bubble}</div></div>`;
+        else
+          html += `<div class="admin-mess-msg admin"><div class="bubble">${bubble}${seen}</div></div>`;
+      });
+      document.getElementById('messages').innerHTML = html;
+      document.getElementById('messages').scrollTop = 99999;
+      pollTyping();
+    });
+}
+document.getElementById('adminInputForm').onsubmit = function(e) {
+  e.preventDefault();
+  let msg = document.getElementById('adminMsgInput').value.trim();
+  if (!msg) return;
+  fetch('/api/adminsend', {
+    method:'POST',
+    headers:{'Content-Type':'application/json',authorization:'Basic '+adminAuth},
+    body: JSON.stringify({clientId:currentClient, msg})
+  }).then(()=>{document.getElementById('adminMsgInput').value='';loadChat();});
+  sendTyping(false);
+};
+document.getElementById('adminMsgInput').addEventListener('input', ()=>{
+  sendTyping(document.getElementById('adminMsgInput').value.length > 0);
+});
+function sendTyping(typing) {
+  if (!currentClient) return;
+  fetch('/api/admintyping', {
+    method:'POST',
+    headers:{'Content-Type':'application/json',authorization:'Basic '+adminAuth},
+    body: JSON.stringify({clientId:currentClient, typing})
+  });
+}
+document.getElementById('adminImgInput').onchange = function() {
+  if (!this.files[0]) return;
+  let fd = new FormData();
+  fd.append('file', this.files[0]);
+  fetch('/api/upload', {method:'POST', body:fd})
+    .then(r=>r.json())
+    .then(data=>{
+      if (data.url) {
+        fetch('/api/adminsend', {
+          method:'POST',
+          headers:{'Content-Type':'application/json',authorization:'Basic '+adminAuth},
+          body: JSON.stringify({clientId:currentClient, msg:'img:' + data.url})
+        }).then(()=>loadChat());
+      }
+    });
+};
+document.querySelector('#adminInputForm label').onclick = ()=>document.getElementById('adminImgInput').click();
+
+let pollTimer = null;
+function pollUserList() {
+  fetch('/api/allchats', {headers:{authorization:'Basic '+adminAuth}})
+    .then(r=>r.json())
+    .then(list=>{
+      lastSeen = {};
+      list.forEach(u=>{
+        if (!u.unread) lastSeen[u.clientId] = true;
+      });
+      loadUserList();
+      pollTimer = setTimeout(pollUserList, 2000);
+    });
+}
+let pollTypingTimer = null;
+function pollTyping() {
+  fetch('/api/allchats', {headers:{authorization:'Basic '+adminAuth}})
+    .then(r=>r.json()).then(list=>{
+      let chat = list.find(c=>c.clientId===currentClient);
+      document.getElementById('adminTyping').style.display = (chat && chat.typing) ? '' : 'none';
+      pollTypingTimer = setTimeout(pollTyping, 1200);
+    });
+}
+window.loginAdmin = loginAdmin;
+window.openChat = openChat;
+document.querySelector('.admin-mess-container').style.display = 'none';
 </script>
 </body>
 </html>
