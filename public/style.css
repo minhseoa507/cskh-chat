@@ -184,4 +184,95 @@ body {
   align-items: center;
   gap: 6px;
 }
+.admin-mess-container {
+  display: flex;
+  height: 95vh;
+  background: #f5f7fa;
+  border-radius: 18px;
+  box-shadow: 0 4px 32px rgba(0,0,0,0.10);
+  overflow: hidden;
+  min-width: 900px;
+}
+.admin-mess-sidebar {
+  width: 340px;
+  background: #fff;
+  border-right: 1.5px solid #e5e7eb;
+  overflow-y: auto;
+  padding: 0;
+}
+.admin-mess-user {
+  display: flex; align-items: center; gap: 16px;
+  padding: 18px 20px 14px 20px;
+  border-bottom: 1px solid #f2f2f5;
+  cursor: pointer;
+  transition: background 0.18s;
+  background: #fff;
+}
+.admin-mess-user.active, .admin-mess-user:hover {
+  background: #eaf4ff;
+}
+.admin-mess-avatar {
+  width: 44px; height: 44px; border-radius: 50%;
+  background: linear-gradient(135deg,#4f8cff,#6ed6ff);
+  display: flex; align-items: center; justify-content: center;
+  position: relative;
+}
+.admin-mess-avatar.online:after {
+  content: ""; position: absolute; right: 2px; bottom: 2px; width: 11px; height: 11px; border-radius: 50%; background: #4f8cff; border: 2px solid #fff;
+}
+.admin-mess-avatar.offline:after {
+  content: ""; position: absolute; right: 2px; bottom: 2px; width: 11px; height: 11px; border-radius: 50%; background: #bbb; border: 2px solid #fff;
+}
+.admin-mess-userinfo { flex: 1; min-width: 0;}
+.admin-mess-username { font-weight: 600; font-size: 1.08rem; color: #23272f; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;}
+.admin-mess-lastmsg { color: #888; font-size: 0.98em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;}
+.admin-mess-meta { display: flex; flex-direction: column; align-items: flex-end; gap: 3px;}
+.admin-mess-dot { width: 10px; height: 10px; border-radius: 50%; margin-top: 2px;}
+.admin-mess-dot.online { background: #4f8cff;}
+.admin-mess-dot.offline { background: #bbb;}
+.admin-mess-unread { color: #fff; background: #4f8cff; border-radius: 7px; padding: 1px 9px; font-size: 0.92em; margin-top: 4px;}
+.admin-mess-chatpanel { flex: 1; background: #f8fafc; position: relative; }
+.admin-mess-empty { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: #bbb; font-size: 1.2rem; }
+.admin-mess-empty-icon { font-size: 3.5rem; margin-bottom: 16px;}
+.admin-mess-chatbox { display: flex; flex-direction: column; height: 100%; }
+.admin-mess-chat-header { padding: 18px 26px; background: #fff; font-weight: 700; font-size: 1.13rem; border-bottom: 1.5px solid #e5e7eb;}
+.admin-mess-messages { flex: 1; padding: 24px 32px 10px 32px; overflow-y: auto; background: #f8fafc;}
+.admin-mess-msg { margin-bottom: 18px; display: flex; align-items: flex-end; }
+.admin-mess-msg.user { justify-content: flex-start;}
+.admin-mess-msg.admin { justify-content: flex-end;}
+.admin-mess-msg .bubble {
+  padding: 12px 18px;
+  border-radius: 14px;
+  background: #e5f0ff;
+  color: #23272f;
+  font-size: 1.03rem;
+  max-width: 62%;
+  word-break: break-word;
+  box-shadow: 0 2px 8px rgba(79,140,255,0.07);
+  position: relative;
+}
+.admin-mess-msg.admin .bubble { background: #4f8cff; color: #fff;}
+.admin-mess-msg .bubble img { max-width: 220px; max-height: 220px; border-radius: 8px; display: block;}
+.admin-mess-seen { font-size: 0.91em; color: #fff; margin-top: 8px; opacity: 0.7;}
+.admin-mess-seen-unread { color: #ffeb3b; }
+.admin-mess-input { padding: 16px 26px; border-top: 1.5px solid #e5e7eb; background: #fff; display: flex; gap: 8px;}
+.admin-mess-input input[type="text"] { flex: 1; border: 1px solid #e5e7eb; border-radius: 7px; padding: 10px 13px; font-size: 1rem; outline: none; transition: border 0.2s;}
+.admin-mess-input input[type="text"]:focus { border: 1.5px solid #4f8cff;}
+.admin-mess-input button, .admin-mess-input label { background: #4f8cff; color: #fff; border: none; border-radius: 7px; padding: 0 18px; font-size: 1.05rem; font-weight: 600; cursor: pointer; transition: background 0.2s; display: flex; align-items: center; height: 40px;}
+.admin-mess-input label { padding: 0 10px; margin-right: 4px;}
+.admin-mess-input button:hover, .admin-mess-input label:hover { background: #3571c7;}
+.admin-mess-login { position: fixed; inset: 0; background: rgba(0,0,0,0.08); display: flex; align-items: center; justify-content: center; z-index: 100;}
+.admin-mess-login-box { background: #fff; border-radius: 12px; padding: 38px 36px 32px 36px; box-shadow: 0 4px 32px rgba(0,0,0,0.10);}
+@media (max-width: 1100px) {
+  .admin-mess-container { min-width: 100vw; }
+  .admin-mess-sidebar { width: 38vw; min-width: 180px; }
+  .admin-mess-chatpanel { min-width: 0; }
+  .admin-mess-messages { padding: 12px 4vw 10px 4vw; }
+}
+@media (max-width: 700px) {
+  .admin-mess-container { flex-direction: column; min-width: 0; }
+  .admin-mess-sidebar { width: 100vw; min-width: 0; border-right: none; border-bottom: 1.5px solid #e5e7eb; }
+  .admin-mess-chatpanel { min-width: 0; }
+}
+
 </style>
