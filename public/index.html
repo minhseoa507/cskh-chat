@@ -5,6 +5,13 @@
   <title>CSKH Chat</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" href="style.css">
+  <style>
+    .cskh-chat { max-height: 350px; min-height: 220px; }
+    .cskh-input { position: sticky; bottom: 0; background: #fff; }
+    @media (max-width: 600px) {
+      .cskh-chat { max-height: 250px; }
+    }
+  </style>
 </head>
 <body>
 <div class="cskh-box">
@@ -16,7 +23,7 @@
     <input type="text" id="nameInput" placeholder="Nhập tên của bạn...">
     <button onclick="startChat()">OK</button>
   </div>
-  <div id="chat" style="display:none;">
+  <div id="chat" style="display:none;flex:1;flex-direction:column;">
     <div id="chatbox" class="cskh-chat"></div>
     <div id="typing" class="cskh-typing" style="display:none;">
       <span>CSKH đang nhập</span>
@@ -27,7 +34,7 @@
         <input type="file" id="imgInput" accept="image/*" style="display:none;">
         <span>📎</span>
       </label>
-      <input type="text" id="msgInput" placeholder="Nhập tin nhắn..." autocomplete="off">
+      <textarea id="msgInput" placeholder="Nhập tin nhắn..." autocomplete="off" rows="1" style="resize:none;flex:1;border:1px solid #e5e7eb;border-radius:7px;padding:10px 13px;font-size:1rem;"></textarea>
       <button type="submit">Gửi</button>
     </form>
   </div>
@@ -48,11 +55,11 @@ function startChat() {
   if (!name) return alert('Vui lòng nhập tên!');
   localStorage.setItem('cskh_name', name);
   loginDiv.style.display = 'none';
-  chatDiv.style.display = '';
+  chatDiv.style.display = 'flex';
   loadHistory();
   poll();
 }
-if (name) { loginDiv.style.display = 'none'; chatDiv.style.display = ''; loadHistory(); poll(); }
+if (name) { loginDiv.style.display = 'none'; chatDiv.style.display = 'flex'; loadHistory(); poll(); }
 
 function loadHistory() {
   fetch(`/api/history?clientId=${clientId}`).then(r=>r.json()).then(arr=>{
@@ -81,10 +88,16 @@ document.getElementById('inputForm').onsubmit = function(e) {
   sendMsg(msg, 'user');
   msgInput.value = '';
   sendTyping(false);
+  autoResize();
 };
 msgInput.addEventListener('input', ()=>{
   sendTyping(msgInput.value.length > 0);
+  autoResize();
 });
+function autoResize() {
+  msgInput.style.height = "auto";
+  msgInput.style.height = (msgInput.scrollHeight) + "px";
+}
 function sendMsg(msg, role) {
   fetch('/api/send', {
     method:'POST', headers:{'Content-Type':'application/json'},
@@ -109,12 +122,15 @@ imgInput.onchange = function() {
 };
 document.querySelector('.cskh-input label').onclick = ()=>imgInput.click();
 
-let typingTimer = null;
+let polling = null;
 function poll() {
   fetch(`/api/history?clientId=${clientId}`).then(r=>r.json()).then(arr=>{
-    chatbox.innerHTML = '';
-    arr.forEach(showMsg);
-    chatbox.scrollTop = chatbox.scrollHeight;
+    const oldLen = chatbox.children.length;
+    if (arr.length !== oldLen) {
+      chatbox.innerHTML = '';
+      arr.forEach(showMsg);
+      chatbox.scrollTop = chatbox.scrollHeight;
+    }
   });
   fetch(`/api/allchats`, {headers:{authorization:'Basic ' + btoa('admin:adminpass')}})
     .then(r=>r.json()).then(list=>{
@@ -125,7 +141,7 @@ function poll() {
         typingDiv.style.display = 'none';
       }
     });
-  typingTimer = setTimeout(poll, 1600);
+  polling = setTimeout(poll, 1200);
 }
 </script>
 </body>
