@@ -12,11 +12,9 @@ app.use(express.static('public'));
 app.use(express.json({limit: '2mb'}));
 app.use(express.urlencoded({extended: true}));
 
-// Tạo thư mục data và uploads nếu chưa có
 if (!fs.existsSync('./data')) fs.mkdirSync('./data');
 if (!fs.existsSync('./data/uploads')) fs.mkdirSync('./data/uploads');
 
-// Multer để upload ảnh
 const storage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, './data/uploads'),
   filename: (req, file, cb) => {
@@ -26,11 +24,12 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage });
 
-// Đọc/lưu lịch sử chat
 const CHAT_FILE = './data/chats.json';
 function readChats() {
   if (!fs.existsSync(CHAT_FILE)) return [];
-  return JSON.parse(fs.readFileSync(CHAT_FILE, 'utf8') || '[]');
+  try {
+    return JSON.parse(fs.readFileSync(CHAT_FILE, 'utf8') || '[]');
+  } catch { return []; }
 }
 function writeChats(chats) {
   fs.writeFileSync(CHAT_FILE, JSON.stringify(chats, null, 2));
