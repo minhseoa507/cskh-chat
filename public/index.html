@@ -50,8 +50,9 @@ function startChat() {
   loginDiv.style.display = 'none';
   chatDiv.style.display = '';
   loadHistory();
+  poll();
 }
-if (name) { loginDiv.style.display = 'none'; chatDiv.style.display = ''; loadHistory(); }
+if (name) { loginDiv.style.display = 'none'; chatDiv.style.display = ''; loadHistory(); poll(); }
 
 function loadHistory() {
   fetch(`/api/history?clientId=${clientId}`).then(r=>r.json()).then(arr=>{
@@ -126,7 +127,6 @@ function poll() {
     });
   typingTimer = setTimeout(poll, 1600);
 }
-if (chatDiv.style.display !== 'none') poll();
 </script>
 </body>
 </html>
