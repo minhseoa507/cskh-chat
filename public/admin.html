@@ -164,9 +164,8 @@
                 btn.onclick = () => {
                     currentId = id;
                     currentName = name;
-                    socket.emit('join client', id);
+                    socket.emit('get history', id);
                     document.getElementById('form').style.display = '';
-                    document.getElementById('messages').innerHTML = '';
                     if (selectedBtn) selectedBtn.classList.remove('selected');
                     btn.classList.add('selected');
                     selectedBtn = btn;
@@ -199,6 +198,16 @@
 
         socket.on('private message', function(msg) {
             renderMsg('user', msg.from, msg.text);
+        });
+
+        socket.on('history', function(data) {
+            document.getElementById('messages').innerHTML = '';
+            if (data && data.messages) {
+                data.messages.forEach(msg => {
+                    renderMsg(msg.from === 'Admin' ? 'admin' : 'user', msg.from, msg.text);
+                });
+            }
+            document.getElementById('form').style.display = '';
         });
     </script>
 </body>
