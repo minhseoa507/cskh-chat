@@ -6,10 +6,17 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" href="style.css">
   <style>
-    .cskh-admin-chatbox { display: flex; flex-direction: column; min-height: 320px; max-height: 500px; }
-    #adminMsgs { flex: 1; overflow-y: auto; }
+    body { background: #f5f7fa; }
+    .cskh-admin-main { display: flex; gap: 24px; }
+    .cskh-admin-list { background: #f6f7fb; border-radius: 16px; padding: 18px 10px 10px 10px; max-width: 340px; min-width: 220px; box-shadow: 0 2px 16px rgba(0,0,0,0.08);}
+    .cskh-admin-chatbox { flex:1; background: #f9fafc; border-radius: 18px; padding: 22px 18px 12px 18px; min-height: 340px; max-height: 520px; overflow-y: auto; box-shadow: 0 4px 24px rgba(0,0,0,0.08);}
+    #adminMsgs { flex: 1; overflow-y: auto; min-height: 220px; max-height: 350px;}
     .cskh-input { position: sticky; bottom: 0; background: #fff; }
     #adminMsgInput { resize: none; }
+    @media (max-width: 900px) {
+      .cskh-admin-main { flex-direction: column; }
+      .cskh-admin-list, .cskh-admin-chatbox { max-width: 100%; }
+    }
   </style>
 </head>
 <body>
@@ -23,22 +30,24 @@
     <button onclick="loginAdmin()">Đăng nhập</button>
   </div>
   <div id="adminPanel" style="display:none;">
-    <div class="cskh-admin-list" id="userList"></div>
-    <div class="cskh-admin-chatbox" id="adminChatBox" style="display:none;">
-      <div class="cskh-admin-header" id="adminChatHeader"></div>
-      <div id="adminMsgs"></div>
-      <div id="adminTyping" class="cskh-admin-typing" style="display:none;">
-        <span>Khách đang nhập</span>
-        <span class="cskh-typing-dot"></span><span class="cskh-typing-dot"></span><span class="cskh-typing-dot"></span>
+    <div class="cskh-admin-main">
+      <div class="cskh-admin-list" id="userList"></div>
+      <div class="cskh-admin-chatbox" id="adminChatBox" style="display:none;flex-direction:column;">
+        <div class="cskh-admin-header" id="adminChatHeader"></div>
+        <div id="adminMsgs"></div>
+        <div id="adminTyping" class="cskh-admin-typing" style="display:none;">
+          <span>Khách đang nhập</span>
+          <span class="cskh-typing-dot"></span><span class="cskh-typing-dot"></span><span class="cskh-typing-dot"></span>
+        </div>
+        <form id="adminInputForm" class="cskh-input" autocomplete="off">
+          <label>
+            <input type="file" id="adminImgInput" accept="image/*" style="display:none;">
+            <span>📎</span>
+          </label>
+          <textarea id="adminMsgInput" placeholder="Nhập trả lời..." autocomplete="off" rows="1" style="resize:none;flex:1;border:1px solid #e5e7eb;border-radius:7px;padding:10px 13px;font-size:1rem;"></textarea>
+          <button type="submit">Gửi</button>
+        </form>
       </div>
-      <form id="adminInputForm" class="cskh-input" autocomplete="off">
-        <label>
-          <input type="file" id="adminImgInput" accept="image/*" style="display:none;">
-          <span>📎</span>
-        </label>
-        <textarea id="adminMsgInput" placeholder="Nhập trả lời..." autocomplete="off" rows="1" style="resize:none;flex:1;border:1px solid #e5e7eb;border-radius:7px;padding:10px 13px;font-size:1rem;"></textarea>
-        <button type="submit">Gửi</button>
-      </form>
     </div>
   </div>
 </div>
@@ -46,6 +55,10 @@
 let adminAuth = '';
 let currentClient = '';
 let chatPolling = null;
+let typingTimer = null;
+let typingStatus = false;
+let typingTimeoutUser = null;
+let lastMsgsLength = 0;
 function loginAdmin() {
   let pass = document.getElementById('adminPass').value;
   adminAuth = btoa('admin:' + pass);
@@ -78,25 +91,31 @@ function loadUserList() {
     });
 }
 function openChat(clientId, name) {
+  // Tắt typing ở khách cũ nếu có
+  if (currentClient) sendTyping(false);
   currentClient = clientId;
-  document.getElementById('adminChatBox').style.display = '';
+  document.getElementById('adminChatBox').style.display = 'flex';
   document.getElementById('adminChatHeader').innerHTML = `<span>${name}</span> <span id="adminOnlineDot" class="dot"></span>`;
-  loadChat();
+  loadChat(true);
   if (chatPolling) clearInterval(chatPolling);
-  chatPolling = setInterval(loadChat, 1200);
+  chatPolling = setInterval(()=>loadChat(false), 1200);
 }
-function loadChat() {
+function loadChat(scrollToEnd = false) {
   fetch('/api/chat?clientId='+currentClient, {headers:{authorization:'Basic '+adminAuth}})
     .then(r=>r.json())
     .then(arr=>{
+      let chatDiv = document.getElementById('adminMsgs');
+      let atBottom = chatDiv.scrollHeight - chatDiv.scrollTop - chatDiv.clientHeight < 40;
       let html = '';
       arr.forEach(m=>{
         let bubble = m.msg.startsWith('img:') ? `<img src="${m.msg.slice(4)}" alt="img">` : m.msg.replace(/</g,'&lt;').replace(/\n/g,'<br>');
         if (m.role === 'user') html += `<div class="cskh-msg"><div class="bubble">${bubble}</div></div>`;
         else html += `<div class="cskh-msg user"><div class="bubble">${bubble}</div></div>`;
       });
-      document.getElementById('adminMsgs').innerHTML = html;
-      document.getElementById('adminMsgs').scrollTop = document.getElementById('adminMsgs').scrollHeight;
+      chatDiv.innerHTML = html;
+      // Chỉ scroll nếu vừa gửi/nhận tin nhắn mới, hoặc lần đầu mở chat
+      if (scrollToEnd || atBottom || arr.length !== lastMsgsLength) chatDiv.scrollTop = chatDiv.scrollHeight;
+      lastMsgsLength = arr.length;
       pollTyping();
     });
 }
@@ -108,11 +127,24 @@ document.getElementById('adminInputForm').onsubmit = function(e) {
     method:'POST',
     headers:{'Content-Type':'application/json',authorization:'Basic '+adminAuth},
     body: JSON.stringify({clientId:currentClient, msg})
-  }).then(()=>{document.getElementById('adminMsgInput').value='';loadChat();autoResize();});
-  sendTyping(false);
+  }).then(()=>{
+    document.getElementById('adminMsgInput').value='';
+    loadChat(true);
+    autoResize();
+    sendTyping(false);
+    typingStatus = false;
+  });
 };
 document.getElementById('adminMsgInput').addEventListener('input', ()=>{
-  sendTyping(document.getElementById('adminMsgInput').value.length > 0);
+  if (!typingStatus) {
+    sendTyping(true);
+    typingStatus = true;
+  }
+  clearTimeout(typingTimer);
+  typingTimer = setTimeout(()=>{
+    sendTyping(false);
+    typingStatus = false;
+  }, 1200);
   autoResize();
 });
 function autoResize() {
@@ -140,7 +172,7 @@ document.getElementById('adminImgInput').onchange = function() {
           method:'POST',
           headers:{'Content-Type':'application/json',authorization:'Basic '+adminAuth},
           body: JSON.stringify({clientId:currentClient, msg:'img:' + data.url})
-        }).then(()=>loadChat());
+        }).then(()=>loadChat(true));
       }
     });
 };
@@ -157,7 +189,13 @@ function pollTyping() {
     .then(r=>r.json()).then(list=>{
       let chat = list.find(c=>c.clientId===currentClient);
       document.getElementById('adminOnlineDot').className = 'dot' + (chat && chat.online ? '' : ' offline');
-      document.getElementById('adminTyping').style.display = (chat && chat.typing) ? '' : 'none';
+      if (chat && chat.typing) {
+        document.getElementById('adminTyping').style.display = '';
+        clearTimeout(typingTimeoutUser);
+        typingTimeoutUser = setTimeout(()=>{document.getElementById('adminTyping').style.display='none';}, 3000);
+      } else {
+        document.getElementById('adminTyping').style.display = 'none';
+      }
       pollTypingTimer = setTimeout(pollTyping, 1200);
     });
 }
