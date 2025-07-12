@@ -6,46 +6,50 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" href="style.css">
   <style>
-    body { background: #e9f1fa; }
-    .admin-mess-container { display: flex; height: 96vh; min-width: 900px; background: #e9f1fa; border-radius: 16px; box-shadow: 0 4px 32px rgba(0,0,0,0.10); overflow: hidden;}
-    .admin-mess-sidebar { width: 340px; background: #fff; border-right: 1.5px solid #e2eaf6; overflow-y: auto; padding: 0;}
+    body { background: #fbeff3; }
+    .admin-mess-container { display: flex; height: 96vh; min-width: 900px; background: #fbeff3; border-radius: 16px; box-shadow: 0 4px 32px rgba(0,0,0,0.10); overflow: hidden;}
+    .admin-mess-sidebar { width: 340px; background: #fff; border-right: 1.5px solid #f7c6d1; overflow-y: auto; padding: 0;}
     .admin-mess-user { display: flex; align-items: center; gap: 16px; padding: 18px 20px 14px 20px; border-bottom: 1px solid #f2f2f5; cursor: pointer; transition: background 0.18s; background: #fff;}
-    .admin-mess-user.active, .admin-mess-user:hover { background: #dbeaff;}
-    .admin-mess-avatar { width: 44px; height: 44px; border-radius: 50%; background: linear-gradient(135deg,#4f8cff,#6ed6ff); display: flex; align-items: center; justify-content: center; position: relative;}
-    .admin-mess-avatar.online:after { content: ""; position: absolute; right: 2px; bottom: 2px; width: 11px; height: 11px; border-radius: 50%; background: #4f8cff; border: 2px solid #fff;}
+    .admin-mess-user.active, .admin-mess-user:hover { background: #f7c6d1; }
+    .admin-mess-avatar { width: 44px; height: 44px; border-radius: 50%; background: linear-gradient(135deg,#f7c6d1,#a0757e); display: flex; align-items: center; justify-content: center; position: relative;}
+    .admin-mess-avatar.online:after { content: ""; position: absolute; right: 2px; bottom: 2px; width: 11px; height: 11px; border-radius: 50%; background: #a0757e; border: 2px solid #fff;}
     .admin-mess-avatar.offline:after { content: ""; position: absolute; right: 2px; bottom: 2px; width: 11px; height: 11px; border-radius: 50%; background: #bbb; border: 2px solid #fff;}
     .admin-mess-userinfo { flex: 1; min-width: 0;}
-    .admin-mess-username { font-weight: 600; font-size: 1.08rem; color: #23272f; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;}
-    .admin-mess-lastmsg { color: #888; font-size: 0.98em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;}
+    .admin-mess-username { font-weight: 600; font-size: 1.08rem; color: #a0757e; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;}
+    .admin-mess-lastmsg { color: #a0757e; font-size: 0.98em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;}
     .admin-mess-meta { display: flex; flex-direction: column; align-items: flex-end; gap: 3px;}
     .admin-mess-dot { width: 10px; height: 10px; border-radius: 50%; margin-top: 2px;}
-    .admin-mess-dot.online { background: #4f8cff;}
+    .admin-mess-dot.online { background: #a0757e;}
     .admin-mess-dot.offline { background: #bbb;}
-    .admin-mess-unread { color: #fff; background: #4f8cff; border-radius: 7px; padding: 1px 9px; font-size: 0.92em; margin-top: 4px;}
-    .admin-mess-chatpanel { flex: 1; background: #e9f1fa; position: relative; display: flex; flex-direction: column;}
-    .admin-mess-empty { flex:1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #bbb; font-size: 1.18rem; background: #e9f1fa;}
+    .admin-mess-unread { color: #fff; background: #a0757e; border-radius: 7px; padding: 1px 9px; font-size: 0.92em; margin-top: 4px;}
+    .admin-mess-chatpanel { flex: 1; background: #fbeff3; position: relative; display: flex; flex-direction: column;}
+    .admin-mess-empty { flex:1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #f7c6d1; font-size: 1.18rem; background: #fbeff3;}
     .admin-mess-empty-icon { font-size: 3.5rem; margin-bottom: 16px;}
     .admin-mess-chatbox { display: flex; flex-direction: column; height: 100%; }
-    .admin-mess-chat-header { padding: 18px 26px; background: #fff; font-weight: 700; font-size: 1.13rem; border-bottom: 1.5px solid #e2eaf6;}
-    .admin-mess-messages { flex: 1; padding: 24px 32px 10px 32px; overflow-y: auto; background: #f8fafc;}
+    .admin-mess-chat-header { padding: 18px 26px; background: #fff; font-weight: 700; font-size: 1.13rem; border-bottom: 1.5px solid #f7c6d1; color: #a0757e;}
+    .admin-mess-messages { flex: 1; padding: 24px 32px 10px 32px; overflow-y: auto; background: #fff;}
     .admin-mess-msg { margin-bottom: 18px; display: flex; align-items: flex-end; }
     .admin-mess-msg.user { justify-content: flex-start;}
     .admin-mess-msg.admin { justify-content: flex-end;}
-    .admin-mess-msg .bubble { padding: 12px 18px; border-radius: 16px; background: #e5f0ff; color: #23272f; font-size: 1.03rem; max-width: 62%; word-break: break-word; box-shadow: 0 2px 8px rgba(79,140,255,0.07); position: relative;}
-    .admin-mess-msg.admin .bubble { background: #4f8cff; color: #fff;}
+    .admin-mess-msg .bubble { padding: 12px 18px; border-radius: 16px; background: #f7c6d1; color: #a0757e; font-size: 1.03rem; max-width: 62%; word-break: break-word; box-shadow: 0 2px 8px rgba(160,117,126,0.07); position: relative;}
+    .admin-mess-msg.admin .bubble { background: #fff; color: #a0757e; border: 1.5px solid #f7c6d1;}
     .admin-mess-msg .bubble img { max-width: 220px; max-height: 220px; border-radius: 8px; display: block;}
-    .admin-mess-seen { font-size: 0.91em; color: #fff; margin-top: 8px; opacity: 0.7;}
-    .admin-mess-seen.admin-mess-seen-unread { color: #ffd700; }
-    .admin-mess-typing { color: #888; font-size: 1.04rem; margin: 10px 0 0 10px; display: flex; align-items: center; gap: 6px;}
-    .admin-mess-input { display: flex; gap: 8px; align-items: center; padding: 14px 26px; border-top: 1.5px solid #e2eaf6; background: #fff;}
+    .admin-mess-seen { font-size: 0.91em; color: #a0757e; margin-top: 8px; opacity: 0.7;}
+    .admin-mess-seen.admin-mess-seen-unread { color: #e91e63; }
+    .admin-mess-typing { color: #a0757e; font-size: 1.04rem; margin: 10px 0 0 10px; display: flex; align-items: center; gap: 6px;}
+    .cskh-typing-dot { width: 7px; height: 7px; background: #f7c6d1; border-radius: 50%; display: inline-block; animation: cskh-dot 1.1s infinite linear alternate;}
+    .cskh-typing-dot:nth-child(2) { animation-delay: 0.2s; }
+    .cskh-typing-dot:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes cskh-dot { 0% { opacity: 0.3; } 100% { opacity: 1; } }
+    .admin-mess-input { display: flex; gap: 8px; align-items: center; padding: 14px 26px; border-top: 1.5px solid #f7c6d1; background: #fff;}
     .admin-mess-input input[type="text"] { flex: 1; border: 1px solid #e5e7eb; border-radius: 10px; padding: 12px 16px; font-size: 1.08rem;}
-    .admin-mess-input button, .admin-mess-input label { background: #4f8cff; color: #fff; border: none; border-radius: 10px; font-size: 1.11rem; font-weight: 600; cursor: pointer; transition: background 0.2s; display: flex; align-items: center; height: 40px; padding: 0 18px;}
-    .admin-mess-input button:hover, .admin-mess-input label:hover { background: #3571c7;}
-    .admin-mess-login { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(79,140,255,0.09); display: flex; align-items: center; justify-content: center; z-index: 999;}
+    .admin-mess-input button, .admin-mess-input label { background: #f7c6d1; color: #a0757e; border: none; border-radius: 10px; font-size: 1.11rem; font-weight: 600; cursor: pointer; transition: background 0.2s, color 0.2s; display: flex; align-items: center; height: 40px; padding: 0 18px;}
+    .admin-mess-input button:hover, .admin-mess-input label:hover { background: #a0757e; color: #fff;}
+    .admin-mess-login { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(247,198,209,0.12); display: flex; align-items: center; justify-content: center; z-index: 999;}
     .admin-mess-login-box { background: #fff; border-radius: 14px; box-shadow: 0 2px 16px rgba(0,0,0,0.10); padding: 40px 32px 32px 32px; text-align: center;}
     .admin-mess-login-box input { width: 90%; padding: 12px 16px; border-radius: 7px; border: 1px solid #e5e7eb; font-size: 1.07rem; margin-bottom: 18px;}
-    .admin-mess-login-box button { width: 90%; background: #4f8cff; color: #fff; border: none; border-radius: 7px; padding: 12px 0; font-size: 1.1rem; font-weight: 600; cursor: pointer; transition: background 0.2s;}
-    .admin-mess-login-box button:hover { background: #3571c7;}
+    .admin-mess-login-box button { width: 90%; background: #f7c6d1; color: #a0757e; border: none; border-radius: 7px; padding: 12px 0; font-size: 1.1rem; font-weight: 600; cursor: pointer; transition: background 0.2s;}
+    .admin-mess-login-box button:hover { background: #a0757e; color: #fff;}
     @media (max-width: 900px) {
       .admin-mess-container { min-width: 0; flex-direction: column; }
       .admin-mess-sidebar { width: 100%; max-width: 100vw;}
@@ -92,7 +96,13 @@ let adminAuth = '';
 let currentClient = '';
 let clientName = '';
 let lastSeen = {};
+let chatPolling = null;
+let typingTimer = null;
+let typingStatus = false;
+let pollTypingTimer = null;
+let pollUserListTimer = null;
 
+// Đăng nhập admin
 function loginAdmin() {
   let pass = document.getElementById('adminPass').value;
   adminAuth = btoa('admin:' + pass);
@@ -108,6 +118,8 @@ function loginAdmin() {
       }
     });
 }
+
+// Danh sách khách
 function loadUserList() {
   fetch('/api/allchats', {headers:{authorization:'Basic '+adminAuth}})
     .then(r=>r.json())
@@ -135,38 +147,50 @@ function loadUserList() {
       document.getElementById('userList').innerHTML = html || '<div style="color:#888;padding:30px 0;text-align:center;">Chưa có khách nào chat</div>';
     });
 }
+
+// Mở chat với khách
 function openChat(clientId, name) {
+  // Khi chuyển khách, tắt typing của admin cho khách cũ
+  if (currentClient) sendTyping(false);
   currentClient = clientId;
   clientName = name;
   document.getElementById('emptyPanel').style.display = 'none';
   document.getElementById('chatBox').style.display = '';
   document.getElementById('chatHeader').innerHTML = `<span>${name}</span>`;
-  loadChat();
+  loadChat(true);
   loadUserList();
+  // Gửi đã xem cho khách (bằng cách load lại userList, backend sẽ cập nhật unread=false)
+  fetch('/api/allchats', {headers:{authorization:'Basic '+adminAuth}});
+  if (chatPolling) clearInterval(chatPolling);
+  chatPolling = setInterval(()=>loadChat(false), 1200);
 }
-function loadChat() {
+
+// Hiển thị lịch sử chat
+function loadChat(scrollToEnd = false) {
   fetch('/api/chat?clientId='+currentClient, {headers:{authorization:'Basic '+adminAuth}})
     .then(r=>r.json())
     .then(arr=>{
+      let chatDiv = document.getElementById('messages');
+      let atBottom = chatDiv.scrollHeight - chatDiv.scrollTop - chatDiv.clientHeight < 40;
       let html = '';
-      let lastUserMsgIdx = -1;
       arr.forEach((m,i)=>{
         let bubble = m.msg.startsWith('img:') ? `<img src="${m.msg.slice(4)}" alt="img">` : m.msg.replace(/</g,'&lt;').replace(/\n/g,'<br>');
         let seen = '';
-        if (m.role === 'user') lastUserMsgIdx = i;
         if (m.role === 'admin' && i === arr.length-1) {
-          seen = (lastSeen[currentClient]) ? '<div class="admin-mess-seen">Đã xem</div>' : '<div class="admin-mess-seen admin-mess-seen-unread">Chưa xem</div>';
+          seen = '<div class="admin-mess-seen">Đã xem</div>';
         }
         if (m.role === 'user')
           html += `<div class="admin-mess-msg user"><div class="bubble">${bubble}</div></div>`;
         else
           html += `<div class="admin-mess-msg admin"><div class="bubble">${bubble}${seen}</div></div>`;
       });
-      document.getElementById('messages').innerHTML = html;
-      document.getElementById('messages').scrollTop = 99999;
+      chatDiv.innerHTML = html;
+      if (scrollToEnd || atBottom) chatDiv.scrollTop = chatDiv.scrollHeight;
       pollTyping();
     });
 }
+
+// Gửi tin nhắn admin
 document.getElementById('adminInputForm').onsubmit = function(e) {
   e.preventDefault();
   let msg = document.getElementById('adminMsgInput').value.trim();
@@ -175,11 +199,21 @@ document.getElementById('adminInputForm').onsubmit = function(e) {
     method:'POST',
     headers:{'Content-Type':'application/json',authorization:'Basic '+adminAuth},
     body: JSON.stringify({clientId:currentClient, msg})
-  }).then(()=>{document.getElementById('adminMsgInput').value='';loadChat();});
+  }).then(()=>{document.getElementById('adminMsgInput').value='';loadChat(true);});
   sendTyping(false);
 };
+
+// Xử lý typing của admin
 document.getElementById('adminMsgInput').addEventListener('input', ()=>{
-  sendTyping(document.getElementById('adminMsgInput').value.length > 0);
+  if (!typingStatus) {
+    sendTyping(true);
+    typingStatus = true;
+  }
+  clearTimeout(typingTimer);
+  typingTimer = setTimeout(()=>{
+    sendTyping(false);
+    typingStatus = false;
+  }, 1200);
 });
 function sendTyping(typing) {
   if (!currentClient) return;
@@ -189,6 +223,8 @@ function sendTyping(typing) {
     body: JSON.stringify({clientId:currentClient, typing})
   });
 }
+
+// Gửi ảnh
 document.getElementById('adminImgInput').onchange = function() {
   if (!this.files[0]) return;
   let fd = new FormData();
@@ -201,34 +237,28 @@ document.getElementById('adminImgInput').onchange = function() {
           method:'POST',
           headers:{'Content-Type':'application/json',authorization:'Basic '+adminAuth},
           body: JSON.stringify({clientId:currentClient, msg:'img:' + data.url})
-        }).then(()=>loadChat());
+        }).then(()=>loadChat(true));
       }
     });
 };
 document.querySelector('#adminInputForm label').onclick = ()=>document.getElementById('adminImgInput').click();
 
-let pollTimer = null;
-function pollUserList() {
-  fetch('/api/allchats', {headers:{authorization:'Basic '+adminAuth}})
-    .then(r=>r.json())
-    .then(list=>{
-      lastSeen = {};
-      list.forEach(u=>{
-        if (!u.unread) lastSeen[u.clientId] = true;
-      });
-      loadUserList();
-      pollTimer = setTimeout(pollUserList, 2000);
-    });
-}
-let pollTypingTimer = null;
+// Poll realtime trạng thái typing của khách
 function pollTyping() {
   fetch('/api/allchats', {headers:{authorization:'Basic '+adminAuth}})
     .then(r=>r.json()).then(list=>{
       let chat = list.find(c=>c.clientId===currentClient);
-      document.getElementById('adminTyping').style.display = (chat && chat.typing) ? '' : 'none';
+      document.getElementById('adminTyping').style.display = (chat && chat.userTyping) ? '' : 'none';
       pollTypingTimer = setTimeout(pollTyping, 1200);
     });
 }
+
+// Poll realtime danh sách khách
+function pollUserList() {
+  loadUserList();
+  pollUserListTimer = setTimeout(pollUserList, 2000);
+}
+
 window.loginAdmin = loginAdmin;
 window.openChat = openChat;
 document.querySelector('.admin-mess-container').style.display = 'none';
