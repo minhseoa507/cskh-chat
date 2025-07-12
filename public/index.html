@@ -2,75 +2,84 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>CSKH 507 - Chat</title>
+    <title>CSKH 507 - Chat ProVip</title>
     <link href="https://fonts.googleapis.com/css?family=Montserrat:600,400&display=swap" rel="stylesheet">
     <style>
         body {
-            background: linear-gradient(120deg, #a6c0fe 0%, #f68084 100%);
             min-height: 100vh;
             margin: 0;
+            background: linear-gradient(120deg,#485563 0%,#29323c 100%);
             font-family: 'Montserrat', Arial, sans-serif;
             display: flex;
             justify-content: center;
             align-items: center;
         }
-        .chat-container {
-            background: rgba(255,255,255,0.95);
-            box-shadow: 0 8px 40px rgba(0,0,0,0.18);
-            border-radius: 24px;
-            padding: 32px 24px 16px 24px;
+        .chat-box {
+            background: rgba(255,255,255,0.97);
+            box-shadow: 0 8px 40px rgba(44,62,80,0.18);
+            border-radius: 28px;
+            padding: 38px 28px 18px 28px;
             width: 370px;
-            max-width: 95vw;
+            max-width: 98vw;
+            animation: popin 0.7s cubic-bezier(.68,-0.55,.27,1.55);
+        }
+        @keyframes popin {
+            0% { transform: scale(0.7); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
         }
         .chat-header {
-            font-size: 1.7rem;
-            font-weight: 600;
-            color: #3d3d3d;
+            font-size: 2rem;
+            font-weight: 700;
+            color: #29323c;
             margin-bottom: 10px;
             text-align: center;
+            letter-spacing: 2px;
         }
         #messages {
-            height: 320px;
+            height: 330px;
             overflow-y: auto;
             background: #f3f6fb;
-            border-radius: 16px;
+            border-radius: 18px;
             padding: 18px 12px;
             margin-bottom: 18px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-            font-size: 1.05rem;
+            font-size: 1.07rem;
         }
         .msg {
             display: flex;
             align-items: flex-end;
-            margin-bottom: 10px;
+            margin-bottom: 12px;
         }
         .msg.user {
             flex-direction: row-reverse;
         }
         .bubble {
             max-width: 75%;
-            padding: 10px 16px;
-            border-radius: 20px;
+            padding: 12px 18px;
+            border-radius: 22px;
             background: #e4f0fe;
-            margin: 0 8px;
+            margin: 0 10px;
             color: #222;
             box-shadow: 0 1px 4px rgba(150,150,150,0.07);
+            position: relative;
+            word-break: break-word;
         }
         .msg.user .bubble {
-            background: #f68084;
+            background: linear-gradient(120deg,#00c6fb 0%,#005bea 100%);
             color: #fff;
         }
         .avatar {
-            width: 32px;
-            height: 32px;
+            width: 36px;
+            height: 36px;
             border-radius: 50%;
-            background: #a6c0fe;
+            background: #00c6fb;
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: bold;
             color: #fff;
-            font-size: 1.1rem;
+            font-size: 1.15rem;
+            box-shadow: 0 2px 8px rgba(0,198,251,0.13);
         }
         #form {
             display: flex;
@@ -78,18 +87,18 @@
         }
         #input {
             flex: 1;
-            padding: 12px 14px;
+            padding: 13px 15px;
             border-radius: 16px;
-            border: 1px solid #d4dbe5;
-            font-size: 1rem;
+            border: 1.5px solid #d4dbe5;
+            font-size: 1.08rem;
             outline: none;
             transition: border 0.2s;
         }
         #input:focus {
-            border: 1.5px solid #f68084;
+            border: 1.5px solid #005bea;
         }
         #send {
-            background: linear-gradient(120deg, #a6c0fe 0%, #f68084 100%);
+            background: linear-gradient(120deg,#00c6fb 0%,#005bea 100%);
             color: #fff;
             font-weight: 600;
             padding: 0 22px;
@@ -97,55 +106,96 @@
             border-radius: 16px;
             cursor: pointer;
             transition: background 0.2s, box-shadow 0.2s;
-            box-shadow: 0 2px 8px rgba(246,128,132,0.08);
+            box-shadow: 0 2px 8px rgba(0,198,251,0.09);
         }
         #send:hover {
-            background: linear-gradient(120deg, #f68084 0%, #a6c0fe 100%);
+            background: linear-gradient(120deg,#005bea 0%,#00c6fb 100%);
         }
+        #login {
+            text-align: center;
+            margin-bottom: 18px;
+        }
+        #name {
+            padding: 10px 14px;
+            border-radius: 12px;
+            border: 1.5px solid #d4dbe5;
+            font-size: 1.08rem;
+            margin-right: 8px;
+            outline: none;
+            transition: border 0.2s;
+        }
+        #name:focus { border: 1.5px solid #005bea; }
+        #start {
+            padding: 10px 20px;
+            border-radius: 12px;
+            border: none;
+            background: linear-gradient(120deg,#00c6fb 0%,#005bea 100%);
+            color: #fff;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        #start:hover { background: linear-gradient(120deg,#005bea 0%,#00c6fb 100%);}
         @media (max-width: 600px) {
-            .chat-container { padding: 18px 5vw; width: 99vw;}
+            .chat-box { padding: 18px 5vw; width: 99vw;}
             #messages { height: 220px; }
         }
     </style>
 </head>
 <body>
-    <div class="chat-container">
+    <div class="chat-box">
         <div class="chat-header">💬 CSKH 507</div>
-        <div id="messages"></div>
-        <form id="form" autocomplete="off">
-            <input id="input" placeholder="Nhập tin nhắn..." />
-            <button id="send" type="submit">Gửi</button>
-        </form>
+        <div id="login">
+            <input id="name" placeholder="Tên của bạn..." />
+            <button id="start">Bắt đầu chat</button>
+        </div>
+        <div id="chat" style="display:none;">
+            <div id="messages"></div>
+            <form id="form" autocomplete="off">
+                <input id="input" placeholder="Nhập tin nhắn..." />
+                <button id="send" type="submit">Gửi</button>
+            </form>
+        </div>
     </div>
     <script src="/socket.io/socket.io.js"></script>
     <script>
         const socket = io();
+        let myName = '';
+        document.getElementById('start').onclick = () => {
+            const name = document.getElementById('name').value.trim();
+            if (!name) return alert('Nhập tên!');
+            myName = name;
+            socket.emit('register', name);
+            document.getElementById('login').style.display = 'none';
+            document.getElementById('chat').style.display = '';
+        };
+
         const form = document.getElementById('form');
         const input = document.getElementById('input');
         const messages = document.getElementById('messages');
 
-        function renderMsg(user, text) {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            if (input.value) {
+                socket.emit('chat message', {from: myName, text: input.value});
+                renderMsg('user', 'Bạn', input.value);
+                input.value = '';
+            }
+        });
+
+        function renderMsg(type, user, text) {
             const div = document.createElement('div');
-            div.className = 'msg ' + (user === 'Khách' ? 'user' : '');
+            div.className = 'msg ' + (type === 'user' ? 'user' : '');
             div.innerHTML = `
-                <div class="avatar">${user === 'Khách' ? 'K' : 'A'}</div>
+                <div class="avatar">${type === 'user' ? user[0].toUpperCase() : 'A'}</div>
                 <div class="bubble">${text}</div>
             `;
             messages.appendChild(div);
             messages.scrollTop = messages.scrollHeight;
         }
 
-        form.addEventListener('submit', function(e) {
-            e.preventDefault();
-            if (input.value) {
-                socket.emit('chat message', { user: 'Khách', text: input.value });
-                renderMsg('Khách', input.value);
-                input.value = '';
-            }
-        });
-
-        socket.on('chat message', function(msg) {
-            if (msg.user !== 'Khách') renderMsg(msg.user, msg.text);
+        socket.on('private message', function(msg) {
+            renderMsg('admin', msg.from, msg.text);
         });
     </script>
 </body>
