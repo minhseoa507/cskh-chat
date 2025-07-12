@@ -48,6 +48,7 @@ function loginAdmin() {
         document.getElementById('adminLogin').style.display = 'none';
         document.getElementById('adminPanel').style.display = '';
         loadUserList();
+        pollUserList();
       } else {
         alert('Sai mật khẩu!');
       }
@@ -147,7 +148,6 @@ function pollTyping() {
 }
 window.loginAdmin = loginAdmin;
 window.openChat = openChat;
-pollUserList();
 </script>
 </body>
 </html>
