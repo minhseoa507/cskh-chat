@@ -5,6 +5,12 @@
   <title>Admin CSKH</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" href="style.css">
+  <style>
+    .cskh-admin-chatbox { display: flex; flex-direction: column; min-height: 320px; max-height: 500px; }
+    #adminMsgs { flex: 1; overflow-y: auto; }
+    .cskh-input { position: sticky; bottom: 0; background: #fff; }
+    #adminMsgInput { resize: none; }
+  </style>
 </head>
 <body>
 <div class="cskh-box">
@@ -30,7 +36,7 @@
           <input type="file" id="adminImgInput" accept="image/*" style="display:none;">
           <span>📎</span>
         </label>
-        <input type="text" id="adminMsgInput" placeholder="Nhập trả lời..." autocomplete="off">
+        <textarea id="adminMsgInput" placeholder="Nhập trả lời..." autocomplete="off" rows="1" style="resize:none;flex:1;border:1px solid #e5e7eb;border-radius:7px;padding:10px 13px;font-size:1rem;"></textarea>
         <button type="submit">Gửi</button>
       </form>
     </div>
@@ -39,6 +45,7 @@
 <script>
 let adminAuth = '';
 let currentClient = '';
+let chatPolling = null;
 function loginAdmin() {
   let pass = document.getElementById('adminPass').value;
   adminAuth = btoa('admin:' + pass);
@@ -75,6 +82,8 @@ function openChat(clientId, name) {
   document.getElementById('adminChatBox').style.display = '';
   document.getElementById('adminChatHeader').innerHTML = `<span>${name}</span> <span id="adminOnlineDot" class="dot"></span>`;
   loadChat();
+  if (chatPolling) clearInterval(chatPolling);
+  chatPolling = setInterval(loadChat, 1200);
 }
 function loadChat() {
   fetch('/api/chat?clientId='+currentClient, {headers:{authorization:'Basic '+adminAuth}})
@@ -87,7 +96,7 @@ function loadChat() {
         else html += `<div class="cskh-msg user"><div class="bubble">${bubble}</div></div>`;
       });
       document.getElementById('adminMsgs').innerHTML = html;
-      document.getElementById('adminMsgs').scrollTop = 99999;
+      document.getElementById('adminMsgs').scrollTop = document.getElementById('adminMsgs').scrollHeight;
       pollTyping();
     });
 }
@@ -99,12 +108,18 @@ document.getElementById('adminInputForm').onsubmit = function(e) {
     method:'POST',
     headers:{'Content-Type':'application/json',authorization:'Basic '+adminAuth},
     body: JSON.stringify({clientId:currentClient, msg})
-  }).then(()=>{document.getElementById('adminMsgInput').value='';loadChat();});
+  }).then(()=>{document.getElementById('adminMsgInput').value='';loadChat();autoResize();});
   sendTyping(false);
 };
 document.getElementById('adminMsgInput').addEventListener('input', ()=>{
   sendTyping(document.getElementById('adminMsgInput').value.length > 0);
+  autoResize();
 });
+function autoResize() {
+  let input = document.getElementById('adminMsgInput');
+  input.style.height = "auto";
+  input.style.height = (input.scrollHeight) + "px";
+}
 function sendTyping(typing) {
   if (!currentClient) return;
   fetch('/api/admintyping', {
