@@ -50,6 +50,10 @@ const msgInput = document.getElementById('msgInput');
 const typingDiv = document.getElementById('typing');
 const imgInput = document.getElementById('imgInput');
 
+let typingTimer = null;
+let typingStatus = false;
+let typingTimeout = null;
+
 function startChat() {
   name = document.getElementById('nameInput').value.trim();
   if (!name) return alert('Vui lòng nhập tên!');
@@ -61,11 +65,12 @@ function startChat() {
 }
 if (name) { loginDiv.style.display = 'none'; chatDiv.style.display = 'flex'; loadHistory(); poll(); }
 
-function loadHistory() {
+function loadHistory(scrollToEnd = true) {
   fetch(`/api/history?clientId=${clientId}`).then(r=>r.json()).then(arr=>{
+    const oldLen = chatbox.children.length;
     chatbox.innerHTML = '';
     arr.forEach(showMsg);
-    chatbox.scrollTop = chatbox.scrollHeight;
+    if (scrollToEnd) chatbox.scrollTop = chatbox.scrollHeight;
   });
 }
 function showMsg(m) {
@@ -91,7 +96,15 @@ document.getElementById('inputForm').onsubmit = function(e) {
   autoResize();
 };
 msgInput.addEventListener('input', ()=>{
-  sendTyping(msgInput.value.length > 0);
+  if (!typingStatus) {
+    sendTyping(true);
+    typingStatus = true;
+  }
+  clearTimeout(typingTimer);
+  typingTimer = setTimeout(()=>{
+    sendTyping(false);
+    typingStatus = false;
+  }, 1200);
   autoResize();
 });
 function autoResize() {
@@ -103,6 +116,8 @@ function sendMsg(msg, role) {
     method:'POST', headers:{'Content-Type':'application/json'},
     body: JSON.stringify({name, msg, role, clientId})
   }).then(()=>loadHistory());
+  sendTyping(false);
+  typingStatus = false;
 }
 function sendTyping(typing) {
   fetch('/api/send', {
@@ -123,6 +138,7 @@ imgInput.onchange = function() {
 document.querySelector('.cskh-input label').onclick = ()=>imgInput.click();
 
 let polling = null;
+let typingTimeoutAdmin = null;
 function poll() {
   fetch(`/api/history?clientId=${clientId}`).then(r=>r.json()).then(arr=>{
     const oldLen = chatbox.children.length;
@@ -137,6 +153,8 @@ function poll() {
       let chat = list.find(c=>c.clientId===clientId);
       if (chat && chat.typing) {
         typingDiv.style.display = '';
+        clearTimeout(typingTimeoutAdmin);
+        typingTimeoutAdmin = setTimeout(()=>{typingDiv.style.display='none';}, 3000);
       } else {
         typingDiv.style.display = 'none';
       }
