@@ -1,202 +1,132 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-    <meta charset="UTF-8">
-    <title>By Minh Seo </title>
-    <link href="https://fonts.googleapis.com/css?family=Montserrat:600,400&display=swap" rel="stylesheet">
-    <style>
-        body {
-            min-height: 100vh;
-            margin: 0;
-            background: linear-gradient(120deg,#485563 0%,#29323c 100%);
-            font-family: 'Montserrat', Arial, sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-        .chat-box {
-            background: rgba(255,255,255,0.97);
-            box-shadow: 0 8px 40px rgba(44,62,80,0.18);
-            border-radius: 28px;
-            padding: 38px 28px 18px 28px;
-            width: 370px;
-            max-width: 98vw;
-            animation: popin 0.7s cubic-bezier(.68,-0.55,.27,1.55);
-        }
-        @keyframes popin {
-            0% { transform: scale(0.7); opacity: 0; }
-            100% { transform: scale(1); opacity: 1; }
-        }
-        .chat-header {
-            font-size: 2rem;
-            font-weight: 700;
-            color: #29323c;
-            margin-bottom: 10px;
-            text-align: center;
-            letter-spacing: 2px;
-        }
-        #messages {
-            height: 330px;
-            overflow-y: auto;
-            background: #f3f6fb;
-            border-radius: 18px;
-            padding: 18px 12px;
-            margin-bottom: 18px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-            font-size: 1.07rem;
-        }
-        .msg {
-            display: flex;
-            align-items: flex-end;
-            margin-bottom: 12px;
-        }
-        .msg.user {
-            flex-direction: row-reverse;
-        }
-        .bubble {
-            max-width: 75%;
-            padding: 12px 18px;
-            border-radius: 22px;
-            background: #e4f0fe;
-            margin: 0 10px;
-            color: #222;
-            box-shadow: 0 1px 4px rgba(150,150,150,0.07);
-            position: relative;
-            word-break: break-word;
-        }
-        .msg.user .bubble {
-            background: linear-gradient(120deg,#00c6fb 0%,#005bea 100%);
-            color: #fff;
-        }
-        .avatar {
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            background: #00c6fb;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            color: #fff;
-            font-size: 1.15rem;
-            box-shadow: 0 2px 8px rgba(0,198,251,0.13);
-        }
-        #form {
-            display: flex;
-            gap: 8px;
-        }
-        #input {
-            flex: 1;
-            padding: 13px 15px;
-            border-radius: 16px;
-            border: 1.5px solid #d4dbe5;
-            font-size: 1.08rem;
-            outline: none;
-            transition: border 0.2s;
-        }
-        #input:focus {
-            border: 1.5px solid #005bea;
-        }
-        #send {
-            background: linear-gradient(120deg,#00c6fb 0%,#005bea 100%);
-            color: #fff;
-            font-weight: 600;
-            padding: 0 22px;
-            border: none;
-            border-radius: 16px;
-            cursor: pointer;
-            transition: background 0.2s, box-shadow 0.2s;
-            box-shadow: 0 2px 8px rgba(0,198,251,0.09);
-        }
-        #send:hover {
-            background: linear-gradient(120deg,#005bea 0%,#00c6fb 100%);
-        }
-        #login {
-            text-align: center;
-            margin-bottom: 18px;
-        }
-        #name {
-            padding: 10px 14px;
-            border-radius: 12px;
-            border: 1.5px solid #d4dbe5;
-            font-size: 1.08rem;
-            margin-right: 8px;
-            outline: none;
-            transition: border 0.2s;
-        }
-        #name:focus { border: 1.5px solid #005bea; }
-        #start {
-            padding: 10px 20px;
-            border-radius: 12px;
-            border: none;
-            background: linear-gradient(120deg,#00c6fb 0%,#005bea 100%);
-            color: #fff;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-        #start:hover { background: linear-gradient(120deg,#005bea 0%,#00c6fb 100%);}
-        @media (max-width: 600px) {
-            .chat-box { padding: 18px 5vw; width: 99vw;}
-            #messages { height: 220px; }
-        }
-    </style>
+  <meta charset="UTF-8">
+  <title>CSKH Chat</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="chat-box">
-        <div class="chat-header">💬 Xin Chào Con Thiên Nga </div>
-        <div id="login">
-            <input id="name" placeholder="Tên của bạn..." />
-            <button id="start">Bắt đầu chat</button>
-        </div>
-        <div id="chat" style="display:none;">
-            <div id="messages"></div>
-            <form id="form" autocomplete="off">
-                <input id="input" placeholder="Nhập tin nhắn..." />
-                <button id="send" type="submit">Gửi</button>
-            </form>
-        </div>
+<div class="cskh-box">
+  <div class="cskh-header">
+    <span>💬 CSKH Online</span>
+  </div>
+  <div id="login" class="cskh-login">
+    <h3>Chào bạn! Vui lòng nhập tên để bắt đầu chat</h3>
+    <input type="text" id="nameInput" placeholder="Nhập tên của bạn...">
+    <button onclick="startChat()">OK</button>
+  </div>
+  <div id="chat" style="display:none;">
+    <div id="chatbox" class="cskh-chat"></div>
+    <div id="typing" class="cskh-typing" style="display:none;">
+      <span>CSKH đang nhập</span>
+      <span class="cskh-typing-dot"></span><span class="cskh-typing-dot"></span><span class="cskh-typing-dot"></span>
     </div>
-    <script src="/socket.io/socket.io.js"></script>
-    <script>
-        const socket = io();
-        let myName = '';
-        document.getElementById('start').onclick = () => {
-            const name = document.getElementById('name').value.trim();
-            if (!name) return alert('Nhập tên!');
-            myName = name;
-            socket.emit('register', name);
-            document.getElementById('login').style.display = 'none';
-            document.getElementById('chat').style.display = '';
-        };
+    <form id="inputForm" class="cskh-input" autocomplete="off">
+      <label>
+        <input type="file" id="imgInput" accept="image/*" style="display:none;">
+        <span>📎</span>
+      </label>
+      <input type="text" id="msgInput" placeholder="Nhập tin nhắn..." autocomplete="off">
+      <button type="submit">Gửi</button>
+    </form>
+  </div>
+</div>
+<script>
+let clientId = localStorage.getItem('cskh_clientId') || (Date.now() + Math.random().toString(36).slice(2));
+localStorage.setItem('cskh_clientId', clientId);
+let name = localStorage.getItem('cskh_name') || '';
+const chatbox = document.getElementById('chatbox');
+const loginDiv = document.getElementById('login');
+const chatDiv = document.getElementById('chat');
+const msgInput = document.getElementById('msgInput');
+const typingDiv = document.getElementById('typing');
+const imgInput = document.getElementById('imgInput');
 
-        const form = document.getElementById('form');
-        const input = document.getElementById('input');
-        const messages = document.getElementById('messages');
+function startChat() {
+  name = document.getElementById('nameInput').value.trim();
+  if (!name) return alert('Vui lòng nhập tên!');
+  localStorage.setItem('cskh_name', name);
+  loginDiv.style.display = 'none';
+  chatDiv.style.display = '';
+  loadHistory();
+}
+if (name) { loginDiv.style.display = 'none'; chatDiv.style.display = ''; loadHistory(); }
 
-        form.addEventListener('submit', function(e) {
-            e.preventDefault();
-            if (input.value) {
-                socket.emit('chat message', {from: myName, text: input.value});
-                renderMsg('user', myName, input.value);
-                input.value = '';
-            }
-        });
+function loadHistory() {
+  fetch(`/api/history?clientId=${clientId}`).then(r=>r.json()).then(arr=>{
+    chatbox.innerHTML = '';
+    arr.forEach(showMsg);
+    chatbox.scrollTop = chatbox.scrollHeight;
+  });
+}
+function showMsg(m) {
+  let html = '';
+  if (m.role === 'user') html += `<div class="cskh-msg user"><div class="bubble">${msgHtml(m)}</div></div>`;
+  else html += `<div class="cskh-msg"><div class="bubble">${msgHtml(m)}</div></div>`;
+  chatbox.insertAdjacentHTML('beforeend', html);
+}
+function msgHtml(m) {
+  if (m.msg && m.msg.startsWith('img:')) {
+    return `<img src="${m.msg.slice(4)}" alt="image">`;
+  }
+  return m.msg.replace(/</g,'&lt;').replace(/\n/g,'<br>');
+}
 
-        function renderMsg(type, user, text) {
-            const div = document.createElement('div');
-            div.className = 'msg ' + (type === 'user' ? 'user' : '');
-            div.innerHTML = `
-                <div class="avatar">${type === 'user' ? user[0].toUpperCase() : 'A'}</div>
-                <div class="bubble">${text}</div>
-            `;
-            messages.appendChild(div);
-            messages.scrollTop = messages.scrollHeight;
-        }
+document.getElementById('inputForm').onsubmit = function(e) {
+  e.preventDefault();
+  let msg = msgInput.value.trim();
+  if (!msg) return;
+  sendMsg(msg, 'user');
+  msgInput.value = '';
+  sendTyping(false);
+};
+msgInput.addEventListener('input', ()=>{
+  sendTyping(msgInput.value.length > 0);
+});
+function sendMsg(msg, role) {
+  fetch('/api/send', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({name, msg, role, clientId})
+  }).then(()=>loadHistory());
+}
+function sendTyping(typing) {
+  fetch('/api/send', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({name, clientId, typing, role:'user'})
+  });
+}
+imgInput.onchange = function() {
+  if (!imgInput.files[0]) return;
+  let fd = new FormData();
+  fd.append('file', imgInput.files[0]);
+  fetch('/api/upload', {method:'POST', body:fd})
+    .then(r=>r.json())
+    .then(data=>{
+      if (data.url) sendMsg('img:' + data.url, 'user');
+    });
+};
+document.querySelector('.cskh-input label').onclick = ()=>imgInput.click();
 
-        socket.on('private message', function(msg) {
-            renderMsg('admin', msg.from, msg.text);
-        });
-    </script>
+let typingTimer = null;
+function poll() {
+  fetch(`/api/history?clientId=${clientId}`).then(r=>r.json()).then(arr=>{
+    chatbox.innerHTML = '';
+    arr.forEach(showMsg);
+    chatbox.scrollTop = chatbox.scrollHeight;
+  });
+  fetch(`/api/allchats`, {headers:{authorization:'Basic ' + btoa('admin:adminpass')}})
+    .then(r=>r.json()).then(list=>{
+      let chat = list.find(c=>c.clientId===clientId);
+      if (chat && chat.typing) {
+        typingDiv.style.display = '';
+      } else {
+        typingDiv.style.display = 'none';
+      }
+    });
+  typingTimer = setTimeout(poll, 1600);
+}
+if (chatDiv.style.display !== 'none') poll();
+</script>
 </body>
 </html>
