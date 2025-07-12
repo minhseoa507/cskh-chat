@@ -5,6 +5,36 @@
   <title>CSKH Chat</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" href="style.css">
+  <style>
+    body { background: #f7f5f2; }
+    .cskh-header.cskh-brown {
+      background: linear-gradient(90deg,#7c5a3a,#e1bfa6);
+    }
+    .cskh-input button, .cskh-input label {
+      background: #7c5a3a;
+      color: #fff;
+    }
+    .cskh-input button:hover, .cskh-input label:hover {
+      background: #5d4022;
+      color: #fff;
+    }
+    .cskh-msg .bubble {
+      background: #e1bfa6;
+      color: #7c5a3a;
+    }
+    .cskh-msg.user .bubble {
+      background: #fff;
+      color: #7c5a3a;
+      border: 1.5px solid #e1bfa6;
+    }
+    .cskh-typing { color: #7c5a3a; }
+    .cskh-typing-dot { background: #e1bfa6; }
+    .cskh-login button {
+      background: #7c5a3a;
+      color: #fff;
+    }
+    .cskh-login button:hover { background: #5d4022; color: #fff; }
+  </style>
 </head>
 <body>
 <div class="cskh-box">
@@ -14,7 +44,7 @@
   <div id="login" class="cskh-login">
     <h3>Chào bạn! Vui lòng nhập tên để bắt đầu chat</h3>
     <input type="text" id="nameInput" placeholder="Nhập tên của bạn...">
-    <button onclick="startChat()">OK</button>
+    <button id="startBtn">OK</button>
   </div>
   <div id="chat" style="display:none;flex:1;flex-direction:column;">
     <div id="chatbox" class="cskh-chat"></div>
@@ -33,7 +63,132 @@
   </div>
 </div>
 <script>
-// ... giữ nguyên logic như bản đã sửa ở trên ...
+let clientId = localStorage.getItem('cskh_clientId') || (Date.now() + Math.random().toString(36).slice(2));
+localStorage.setItem('cskh_clientId', clientId);
+let name = localStorage.getItem('cskh_name') || '';
+const chatbox = document.getElementById('chatbox');
+const loginDiv = document.getElementById('login');
+const chatDiv = document.getElementById('chat');
+const msgInput = document.getElementById('msgInput');
+const typingDiv = document.getElementById('typing');
+const imgInput = document.getElementById('imgInput');
+const startBtn = document.getElementById('startBtn');
+
+let typingTimer = null;
+let typingStatus = false;
+let typingTimeout = null;
+
+function startChat() {
+  name = document.getElementById('nameInput').value.trim();
+  if (!name) return alert('Vui lòng nhập tên!');
+  localStorage.setItem('cskh_name', name);
+  loginDiv.style.display = 'none';
+  chatDiv.style.display = 'flex';
+  loadHistory();
+  poll();
+}
+startBtn.onclick = startChat;
+document.getElementById('nameInput').addEventListener('keydown', function(e){
+  if(e.key === 'Enter') startChat();
+});
+if (name) { loginDiv.style.display = 'none'; chatDiv.style.display = 'flex'; loadHistory(); poll(); }
+
+function loadHistory(scrollToEnd = true) {
+  fetch(`/api/history?clientId=${clientId}`).then(r=>r.json()).then(arr=>{
+    chatbox.innerHTML = '';
+    arr.forEach(showMsg);
+    if (scrollToEnd) chatbox.scrollTop = chatbox.scrollHeight;
+  });
+}
+function showMsg(m) {
+  let html = '';
+  if (m.role === 'user') html += `<div class="cskh-msg user"><div class="bubble">${msgHtml(m)}</div></div>`;
+  else html += `<div class="cskh-msg"><div class="bubble">${msgHtml(m)}</div></div>`;
+  chatbox.insertAdjacentHTML('beforeend', html);
+}
+function msgHtml(m) {
+  if (m.msg && m.msg.startsWith('img:')) {
+    return `<img src="${m.msg.slice(4)}" alt="image">`;
+  }
+  return m.msg.replace(/</g,'&lt;').replace(/\n/g,'<br>');
+}
+
+document.getElementById('inputForm').onsubmit = function(e) {
+  e.preventDefault();
+  let msg = msgInput.value.trim();
+  if (!msg) return;
+  sendMsg(msg, 'user');
+  msgInput.value = '';
+  sendTyping(false);
+  autoResize();
+};
+msgInput.addEventListener('input', ()=>{
+  if (!typingStatus) {
+    sendTyping(true);
+    typingStatus = true;
+  }
+  clearTimeout(typingTimer);
+  typingTimer = setTimeout(()=>{
+    sendTyping(false);
+    typingStatus = false;
+  }, 1200);
+  autoResize();
+});
+function autoResize() {
+  msgInput.style.height = "auto";
+  msgInput.style.height = (msgInput.scrollHeight) + "px";
+}
+function sendMsg(msg, role) {
+  fetch('/api/send', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({name, msg, role, clientId})
+  }).then(()=>loadHistory());
+  sendTyping(false);
+  typingStatus = false;
+}
+function sendTyping(typing) {
+  fetch('/api/send', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({name, clientId, typing, role:'user'})
+  });
+}
+imgInput.onchange = function() {
+  if (!imgInput.files[0]) return;
+  let fd = new FormData();
+  fd.append('file', imgInput.files[0]);
+  fetch('/api/upload', {method:'POST', body:fd})
+    .then(r=>r.json())
+    .then(data=>{
+      if (data.url) sendMsg('img:' + data.url, 'user');
+    });
+};
+document.querySelector('.cskh-input label').onclick = ()=>imgInput.click();
+
+let polling = null;
+let typingTimeoutAdmin = null;
+function poll() {
+  fetch(`/api/history?clientId=${clientId}`).then(r=>r.json()).then(arr=>{
+    const oldLen = chatbox.children.length;
+    if (arr.length !== oldLen) {
+      chatbox.innerHTML = '';
+      arr.forEach(showMsg);
+      chatbox.scrollTop = chatbox.scrollHeight;
+    }
+  });
+  // Lấy trạng thái adminTyping riêng biệt
+  fetch(`/api/allchats`, {headers:{authorization:'Basic ' + btoa('admin:adminpass')}})
+    .then(r=>r.json()).then(list=>{
+      let chat = list.find(c=>c.clientId===clientId);
+      if (chat && chat.adminTyping) {
+        typingDiv.style.display = '';
+        clearTimeout(typingTimeoutAdmin);
+        typingTimeoutAdmin = setTimeout(()=>{typingDiv.style.display='none';}, 3000);
+      } else {
+        typingDiv.style.display = 'none';
+      }
+    });
+  polling = setTimeout(poll, 1200);
+}
 </script>
 </body>
 </html>
